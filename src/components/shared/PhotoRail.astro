@@ -1,0 +1,318 @@
+---
+/*
+  The About photo rail. 09, and 02 section 6's About variant.
+
+  Its own component rather than a variant of the thumbnail carousel, because
+  the two are built on opposite constraints. The thumbnail carousel gives every
+  cell one width and slides the track by a whole number of cells. These seven
+  photographs are seven different shapes, from 0.612 to 1.480, and squaring
+  them off cuts into the pictures. A shared height is what makes a row read as
+  a row; a shared width is not needed for that and cannot be had without a crop.
+
+  So: one fixed track height, natural widths, no object-fit and no aspect-ratio
+  on the item. The headshot lands near 220px wide and Fun Image near 533px, and
+  that unevenness is the correct output.
+
+  Three consequences, handled rather than fought:
+
+  - The visible count stops being exactly three. The centred photo is always
+    whole and centred; its neighbours show whatever their width allows.
+  - Centring is measured, not derived. Index times a constant width is wrong
+    once widths differ, so the track snaps and the arrows scroll the track to
+    the centre of whichever photo is next. The opening position uses the same
+    call with behavior 'auto' so it does not animate on load.
+  - Zero CLS still holds because every img carries its own intrinsic width and
+    height from Astro's image metadata, so the right width is reserved before
+    the file lands. Without that the row reflows seven times on load.
+*/
+import { Image } from 'astro:assets';
+import Icon from '../Icon.astro';
+import { PHOTO_ORDER, PHOTO_ALT, PHOTO_CAROUSEL_OPENS_ON } from '../../data/copy/about';
+import { ABOUT_IMAGES } from '../../data/assets';
+
+interface Props {
+  id: string;
+}
+
+const { id } = Astro.props;
+
+/* The two rendered heights, mirroring --photo-h at its two breakpoints, so the
+   widths requested are the widths actually painted at each. */
+const HEIGHT_DESKTOP = 360;
+const HEIGHT_MOBILE = 240;
+
+const photos = PHOTO_ORDER.map((key) => {
+  const src = ABOUT_IMAGES[key];
+  const ratio = src.width / src.height;
+  return {
+    src,
+    alt: PHOTO_ALT[key],
+    width: Math.round(ratio * HEIGHT_DESKTOP),
+    widthMobile: Math.round(ratio * HEIGHT_MOBILE),
+  };
+});
+---
+
+<div class="photo-rail" data-photo-rail={id} data-start={PHOTO_CAROUSEL_OPENS_ON - 1}>
+  <button class="arrow prev" type="button" aria-label="Previous photo" data-dir="-1">
+    <Icon name="arrow-right" size={16} />
+  </button>
+
+  {/*
+    The track scrolls and nothing inside it is focusable, because a photograph
+    is not a link. axe flags exactly that: a scrollable region a keyboard user
+    cannot reach. It takes focus itself and carries its own name, and the arrow
+    key handler above already moves it once it has focus.
+  */}
+  <div
+    class="track"
+    data-track
+    tabindex="0"
+    role="group"
+    aria-label="Photographs, use the left and right arrow keys"
+  >
+    <ul class="strip" role="list">
+      {
+        photos.map((photo, i) => (
+          <li class="photo" data-index={i}>
+            {/*
+              Every one lazy. The rail sits below the body on /about and inside
+              a tab that is not selected on /resume and on the landing, so none
+              of these is ever the first paint. Loading four of them eagerly
+              cost four points of mobile performance on the landing and five on
+              /resume. Lazy is safe for CLS because the width and height
+              attributes reserve the box either way.
+            */}
+            <Image
+              src={photo.src}
+              alt={photo.alt}
+              widths={[photo.widthMobile, photo.width, photo.width * 2]}
+              sizes={`(min-width: 768px) ${photo.width}px, ${photo.widthMobile}px`}
+              format="webp"
+              loading="lazy"
+              decoding="async"
+            />
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+
+  <button class="arrow next" type="button" aria-label="Next photo" data-dir="1">
+    <Icon name="arrow-right" size={16} />
+  </button>
+
+  <p class="position t-data" aria-live="polite" data-position></p>
+</div>
+
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>('[data-photo-rail]')) {
+    const track = root.querySelector<HTMLElement>('[data-track]');
+    const photos = Array.from(root.querySelectorAll<HTMLElement>('.photo'));
+    const position = root.querySelector<HTMLElement>('[data-position]');
+    if (!track || photos.length === 0) continue;
+
+    /*
+      Whichever photo's centre is nearest the track's centre. Measured from
+      bounding rects, not from offsetLeft: an ancestor of this rail is
+      transformed, so offsetParent is null and offsetLeft does not resolve
+      against the track. Reading it put the arrows and the readout on the wrong
+      photo while the layout itself was correct.
+    */
+    const centred = () => {
+      const box = track.getBoundingClientRect();
+      const mid = box.left + box.width / 2;
+      let best = 0;
+      let bestGap = Infinity;
+      photos.forEach((photo, i) => {
+        const rect = photo.getBoundingClientRect();
+        const gap = Math.abs(rect.left + rect.width / 2 - mid);
+        if (gap < bestGap) {
+          bestGap = gap;
+          best = i;
+        }
+      });
+      return best;
+    };
+
+    /*
+      Centre a photo by scrolling the track, and only the track.
+
+      scrollIntoView was the obvious call and it is wrong here: it scrolls
+      every scrollable ancestor, including the document. On /about the rail
+      sits below the body, so positioning it on load jumped the window down
+      345px, and a page that scrolls itself during load reports no largest
+      contentful paint at all. Lighthouse scored /about mobile at 0 for that.
+
+      Same geometry, computed from rects rather than an index, because the
+      widths differ.
+    */
+    const show = (index: number, behavior: ScrollBehavior) => {
+      const photo = photos[Math.max(0, Math.min(photos.length - 1, index))];
+      if (!photo) return;
+      const box = track.getBoundingClientRect();
+      const rect = photo.getBoundingClientRect();
+      const delta = rect.left + rect.width / 2 - (box.left + box.width / 2);
+      track.scrollTo({ left: track.scrollLeft + delta, behavior });
+    };
+
+    const readout = () => {
+      if (position) position.textContent = `${centred() + 1} of ${photos.length}`;
+    };
+
+    let frame = 0;
+    let settled = false;
+
+    track.addEventListener('scroll', () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(readout);
+    });
+
+    const move = (index: number, behavior: ScrollBehavior) => {
+      show(index, behavior);
+      readout();
+    };
+
+    for (const button of root.querySelectorAll<HTMLButtonElement>('.arrow')) {
+      button.addEventListener('click', () => {
+        settled = true;
+        move(centred() + Number(button.dataset.dir), 'smooth');
+      });
+    }
+
+    root.addEventListener('keydown', (event) => {
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+      event.preventDefault();
+      settled = true;
+      move(centred() + (event.key === 'ArrowRight' ? 1 : -1), 'smooth');
+    });
+
+    /*
+      Opening position: the same mechanism, without the animation.
+
+      It has to be reapplied rather than run once, and it has to verify. On
+      /resume and on the landing this rail is slotted into a Preact island:
+      hydration re renders around it and the track's scroll goes back to zero,
+      and inside the About tab the track has no width at all until that tab is
+      selected, where a scroll into a zero width box does nothing.
+
+      So it retries until the target photo is actually the centred one, then
+      stops. It is not driven by a "has the user scrolled" flag, because the
+      opening scroll fires a scroll event itself and that flag killed the
+      retries before they could land.
+    */
+    const start = Number(root.dataset.start ?? 0);
+
+    const settle = () => {
+      if (settled || track.clientWidth === 0) return;
+      show(start, 'auto');
+      requestAnimationFrame(() => {
+        readout();
+        if (centred() === start) settled = true;
+      });
+    };
+
+    settle();
+    requestAnimationFrame(settle);
+    window.addEventListener('load', settle);
+    new ResizeObserver(settle).observe(track);
+    new IntersectionObserver((entries) => {
+      for (const entry of entries) if (entry.isIntersecting) settle();
+    }).observe(root);
+  }
+</script>
+
+<style>
+  .photo-rail {
+    --photo-h: 360px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--s-3);
+  }
+
+  .track:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+  }
+
+  .track {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    /* The scrollbar is the mechanism here, not a control. */
+    scrollbar-width: none;
+  }
+
+  .track::-webkit-scrollbar { display: none; }
+
+  .strip {
+    display: flex;
+    gap: var(--s-4);
+    padding-block: var(--s-3);
+    /* Half the track either side, so the first and last photo can reach the
+       centre like every other one. */
+    padding-inline: 50%;
+  }
+
+  .photo {
+    flex: 0 0 auto;
+    scroll-snap-align: center;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    box-shadow: var(--shadow-1);
+    background: var(--surface);
+  }
+
+  /*
+    Constant height, natural width. No object-fit and no aspect-ratio: nothing
+    is being fitted into a box, so there is no box. The intrinsic width and
+    height attributes Astro emits are what reserve the right width before the
+    file lands.
+  */
+  .photo :global(img) {
+    display: block;
+    height: var(--photo-h);
+    width: auto;
+    max-width: none;
+  }
+
+  .arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    color: var(--muted);
+    transition:
+      color var(--dur-fast) var(--ease),
+      border-color var(--dur-fast) var(--ease);
+  }
+
+  .arrow:hover { color: var(--ink); border-color: var(--border-strong); }
+  .prev :global(svg) { transform: rotate(180deg); }
+
+  .position {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: var(--faint);
+  }
+
+  @media (max-width: 767px) {
+    .photo-rail { --photo-h: 240px; grid-template-columns: minmax(0, 1fr); }
+    .arrow { display: none; }
+
+    .track {
+      margin-inline: calc(var(--outer-margin) * -1);
+    }
+
+    .strip { padding-inline: 50%; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .track { scroll-behavior: auto; }
+  }
+</style>

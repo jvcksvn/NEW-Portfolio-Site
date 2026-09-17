@@ -1,0 +1,52 @@
+{
+  "name": "site",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build && npm run check",
+    "build:only": "astro build",
+    "check": "node scripts/check-dashes.mjs && node scripts/check-counts.mjs && node scripts/check-content.mjs",
+    "check:dashes": "node scripts/check-dashes.mjs",
+    "check:counts": "node scripts/check-counts.mjs",
+    "assets": "node scripts/build-assets.mjs",
+    "preview": "astro preview",
+    "astro": "astro",
+    "fonts": "node scripts/fetch-fonts.mjs && python3 scripts/trim-archivo.py",
+    "check:content": "node scripts/check-content.mjs",
+    "import:content": "node scripts/import-content.mjs"
+  },
+  "dependencies": {
+    "@astrojs/markdown-remark": "^7.3.1",
+    "@astrojs/markdown-satteri": "^0.4.1",
+    "@astrojs/mdx": "^8.0.1",
+    "@astrojs/preact": "^6.0.5",
+    "@astrojs/react": "^6.0.5",
+    "@astrojs/sitemap": "^3.7.4",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "astro": "^7.3.2",
+    "preact": "^10.29.8",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "tailwindcss": "^4.3.3",
+    "zod": "^4.6.1"
+  },
+  "allowScripts": {
+    "esbuild": true
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "axe-core": "^4.13.0",
+    "chrome-launcher": "^1.2.1",
+    "lighthouse": "^13.4.1",
+    "playwright": "^1.63.0",
+    "sharp": "^0.35.4",
+    "typescript": "^6.0.3",
+    "vercel": "^59.15.1"
+  }
+}

@@ -1,0 +1,89 @@
+---
+/*
+  Fig 1.1 — Supply network. A bespoke multi-tier node diagram, replacing the
+  generic box-row FlowDiagram for this figure. One upstream limiter (the Tier 3
+  hot mill) fans out through a Tier 2 coil processor to ten Tier 1 stamping
+  nodes across four countries, then converges on production.
+
+  Token driven: the tinted hub, its glow and the upstream links read from
+  --cs-tint (coral on Case 01), so this same component recolours per case.
+  Neutrals and text come from the theme tokens. No hardcoded colour.
+
+  Decorative: the parent <Figure> carries the aria-label, so this SVG is
+  aria-hidden and the meaning lives in the caption.
+*/
+---
+
+<div class="net">
+  <svg viewBox="0 0 980 340" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+    <!-- column headers -->
+    <g class="hdr">
+      <text x="70" y="24">TIER 3</text>
+      <text x="270" y="24">TIER 2</text>
+      <text x="470" y="24">TIER 1 · 9 STAMPERS + INTERNAL</text>
+      <text x="855" y="24">PRODUCTION</text>
+    </g>
+
+    <!-- upstream links, tinted -->
+    <g class="link-up">
+      <path d="M150 175 H250" />
+      <path d="M360 175 C 410 175, 420 70, 470 70" />
+      <path d="M360 175 C 410 175, 420 122, 470 122" />
+      <path d="M360 175 C 410 175, 420 175, 470 175" />
+      <path d="M360 175 C 410 175, 420 228, 470 228" />
+      <path d="M360 175 C 410 175, 420 281, 470 281" />
+    </g>
+
+    <!-- downstream links, neutral -->
+    <g class="link-down">
+      <path d="M690 70 C 760 70, 780 175, 840 175" />
+      <path d="M690 122 C 760 122, 780 175, 840 175" />
+      <path d="M690 175 H840" />
+      <path d="M690 228 C 760 228, 780 175, 840 175" />
+      <path d="M690 281 C 760 281, 780 175, 840 175" />
+    </g>
+
+    <!-- Tier 3 limiter -->
+    <rect class="hub" x="34" y="150" width="116" height="50" rx="4" />
+    <text class="hub-t" x="92" y="172">Hot mill</text>
+    <text class="hub-s" x="92" y="188">SINGLE LIMITER</text>
+
+    <!-- Tier 2 -->
+    <rect class="box" x="250" y="150" width="110" height="50" rx="4" />
+    <text class="box-t" x="305" y="172">Coil</text>
+    <text class="box-s" x="305" y="188">TIER 2 PROCESSOR</text>
+
+    <!-- Tier 1 nodes -->
+    <g>
+      <rect class="box" x="470" y="52" width="220" height="36" rx="4" /><text class="box-l" x="484" y="74">4× US Tier 1 stampers</text>
+      <rect class="box" x="470" y="104" width="220" height="36" rx="4" /><text class="box-l" x="484" y="126">3× CN Tier 1 stampers</text>
+      <rect class="box" x="470" y="157" width="220" height="36" rx="4" /><text class="box-l" x="484" y="179">1× VN Tier 1 stamper</text>
+      <rect class="box" x="470" y="210" width="220" height="36" rx="4" /><text class="box-l" x="484" y="232">1× MX Tier 1 stamper</text>
+      <rect class="box alt" x="470" y="263" width="220" height="36" rx="4" /><text class="box-l" x="484" y="285">Internal stamping</text>
+    </g>
+
+    <!-- Production -->
+    <rect class="box" x="840" y="150" width="108" height="50" rx="4" />
+    <text class="box-t" x="894" y="180">Production</text>
+  </svg>
+</div>
+
+<style>
+  .net { min-width: 720px; }
+  svg { width: 100%; height: auto; display: block; }
+
+  .hdr text { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.12em; fill: var(--faint); }
+
+  .link-up path { fill: none; stroke: var(--cs-tint, var(--ink)); stroke-width: 1.4; opacity: 0.55; }
+  .link-down path { fill: none; stroke: var(--border-strong); stroke-width: 1.2; opacity: 0.9; }
+
+  .hub { fill: color-mix(in srgb, var(--cs-tint, var(--ink)) 12%, var(--surface)); stroke: var(--cs-tint, var(--ink)); stroke-width: 1.6; }
+  .hub-t { font-family: var(--font-display); font-weight: 700; font-size: 13px; fill: var(--cs-tint, var(--ink)); text-anchor: middle; }
+  .hub-s { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.08em; fill: var(--cs-tint, var(--ink)); text-anchor: middle; }
+
+  .box { fill: var(--surface); stroke: var(--border); stroke-width: 1.2; }
+  .box.alt { fill: var(--surface-2); }
+  .box-t { font-family: var(--font-display); font-weight: 700; font-size: 12px; fill: var(--ink); text-anchor: middle; }
+  .box-s { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.06em; fill: var(--muted); text-anchor: middle; }
+  .box-l { font-family: var(--font-mono); font-size: 11.5px; fill: var(--ink); }
+</style>

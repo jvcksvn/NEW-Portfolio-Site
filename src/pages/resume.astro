@@ -1,0 +1,74 @@
+---
+/*
+  /resume. The deep link target, with its own metadata and a print stylesheet.
+
+  Renders the same island as the landing page. 08: no duplicated markup.
+*/
+import BaseLayout from '../layouts/BaseLayout.astro';
+import InteractiveResume from '../components/resume/InteractiveResume';
+import PhotoRail from '../components/shared/PhotoRail.astro';
+import { RESUME_PAGE } from '../data/copy/resume';
+import { titleFor } from '../lib/seo';
+import { LINKS, ROUTES } from '../lib/routes';
+import Icon from '../components/Icon.astro';
+import '../styles/resume.css';
+import '../styles/print-resume.css';
+---
+
+{/* 09: the departure line is dropped. /about now states the status plainly
+    with a date on it, and the chronology's end date carries the rest. */}
+<BaseLayout title={titleFor(ROUTES.resume.label)} description={RESUME_PAGE.meta}>
+  <section class="shell resume-page">
+    <h1 class="t-display">{RESUME_PAGE.h1}</h1>
+    <p class="t-lede intro reading">{RESUME_PAGE.intro}</p>
+
+    {/* The photo carousel is an Astro component passed in as a slot, so its
+        images keep the responsive set and the intrinsic dimensions that hold
+        CLS at zero. A Preact <img> inside the island would lose both. */}
+    <InteractiveResume client:load>
+      <PhotoRail slot="collage" id="resume-photos" />
+    </InteractiveResume>
+
+    <a class="t-label download" href={LINKS.resumePdf}>
+      <span>{RESUME_PAGE.downloadCta}</span>
+      <Icon name="arrow-right" size={13} />
+    </a>
+  </section>
+</BaseLayout>
+
+<style>
+  .resume-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-5);
+    padding-block: var(--s-8) var(--s-10);
+  }
+
+  .intro {
+    color: var(--muted);
+    margin-bottom: var(--s-3);
+  }
+
+  .download {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    align-self: flex-start;
+    min-height: 44px;
+    color: var(--ink);
+  }
+
+  .download :global(svg) {
+    transition: transform var(--dur-fast) var(--ease);
+  }
+
+  .download:hover :global(svg) {
+    transform: translateX(4px);
+  }
+
+  @media print {
+    .download {
+      display: none;
+    }
+  }
+</style>

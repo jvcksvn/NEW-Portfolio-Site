@@ -1,0 +1,45 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EntryPage from '../../components/collections/EntryPage.astro';
+import { NO_YEAR } from '../../content.config';
+import { ROUTES } from '../../lib/routes';
+import '../../styles/prose.css';
+
+export async function getStaticPaths() {
+  const entries = (await getCollection('library')).filter((e) => !e.data.draft);
+  return entries.map((entry) => ({ params: { slug: entry.data.slug }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+
+/* No number of any kind above the verdict, per 04, and no bracketed year. */
+const meta = [
+  entry.data.author,
+  entry.data.yearRead !== NO_YEAR ? `Read ${entry.data.yearRead}` : null,
+  entry.data.length === 'long' ? 'Long entry' : 'Short entry',
+].filter(Boolean) as string[];
+---
+
+<BaseLayout title={`${entry.data.title} | Jackson Barker`} description={entry.data.verdict}
+  type="article"
+  article={{ headline: entry.data.title, description: entry.data.verdict, section: "Library" }}>
+  <EntryPage
+    title={entry.data.title}
+    meta={meta}
+    backHref={ROUTES.library.path}
+    backLabel="All books"
+  >
+    <p class="verdict-line t-lede">{entry.data.verdict}</p>
+    <Content />
+  </EntryPage>
+</BaseLayout>
+
+<style>
+  .verdict-line {
+    padding-bottom: var(--s-5);
+    border-bottom: 1px solid var(--border);
+    color: var(--ink);
+  }
+</style>

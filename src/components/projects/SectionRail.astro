@@ -1,0 +1,87 @@
+---
+/*
+  02-design-system.md section 6, "Numbered section rail".
+
+  A narrow left rail holding the monospaced beat number and label, content on the
+  right. Collapses to a single column under --bp-m.
+
+  The source documents wrote these headings as "01 Context — An upstream
+  constraint". The number, the label and the title are separate fields here, so
+  the em dash that joined them is gone structurally rather than replaced.
+*/
+interface Props {
+  number: string;
+  label: string;
+  title: string;
+}
+const { number, label, title } = Astro.props;
+---
+
+<section class="rail">
+  <div class="rail-left">
+    <span class="rail-number">{number}</span>
+    <span class="rail-label t-label">{label}</span>
+  </div>
+  <div class="rail-body">
+    <h2 class="t-h3 rail-title">{title}</h2>
+    <slot />
+  </div>
+</section>
+
+<style>
+  .rail {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--s-4);
+    padding-block: var(--s-7);
+    border-top: 1px solid var(--border);
+  }
+
+  .rail-left {
+    display: flex;
+    gap: var(--s-3);
+  }
+
+  /*
+    02 section 2 permits the case tint on section numerals. At --t-label the
+    coral measures 3.16:1 on the page ground, which fails AA for small text; as
+    a numeral it clears the 3:1 large text threshold and reads as the beat
+    marker the numbered rail is for. Size, not hue, was the thing that was wrong.
+  */
+  .rail-number {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: var(--cs-tint, var(--ink));
+  }
+
+  .rail-label {
+    color: var(--faint);
+  }
+
+  .rail-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+    min-width: 0;
+  }
+
+  .rail-title {
+    color: var(--ink);
+  }
+
+  @media (min-width: 768px) {
+    .rail {
+      grid-template-columns: 180px minmax(0, 1fr);
+      gap: var(--s-8);
+      padding-block: var(--s-8);
+    }
+
+    .rail-left {
+      flex-direction: column;
+      gap: var(--s-2);
+    }
+  }
+</style>

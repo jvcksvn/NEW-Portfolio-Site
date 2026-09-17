@@ -1,0 +1,106 @@
+/*
+  Self hosted faces. 02-design-system.md section 3.
+
+  Serving these from Google cost roughly 830ms of render blocking on mobile and a
+  third party connection on every page. All five files are same origin, latin
+  subset, and declared with font-display: swap.
+
+  Archivo is the two axis variable font, kept continuous over the ranges the
+  scale uses rather than pinned to instances: wght 200 to 800 supplies the hero's
+  200 and 800 plus the 600 and 700 headings, wdth 75 to 100 supplies the hero's
+  75 and 86. Regenerate with scripts/fetch-fonts.mjs then scripts/trim-archivo.py.
+*/
+
+@font-face {
+  font-family: 'Archivo';
+  src: url('/fonts/archivo-variable.woff2') format('woff2-variations');
+  font-weight: 200 800;
+  font-stretch: 75% 100%;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBM Plex Sans';
+  src: url('/fonts/plex-sans-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBM Plex Sans';
+  src: url('/fonts/plex-sans-600.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('/fonts/plex-mono-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('/fonts/plex-mono-500.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+/*
+  Metric matched fallbacks.
+
+  02 section 3 fixes font-display: swap, so the fallback paints first and the
+  real face replaces it. Where a text block's height depends on how many lines
+  it takes, that replacement reflows the block: /writing measured CLS 0.0173 on
+  mobile, sourced to the card grid, because card titles and excerpts rewrapped.
+
+  These faces re-serve a local Arial at Archivo's and Plex's own proportions, so
+  the fallback occupies the same space and the swap changes glyph shapes without
+  moving anything. size-adjust is the measured width ratio of the real face to
+  Arial over a mixed sample; the ascent and descent overrides are the real
+  face's own hhea metrics divided by that ratio. Remeasure with
+  scripts/dev/font-metrics.mjs if a face is ever regenerated.
+*/
+
+/*
+   Archivo 878/-210 per 1000 upem. size-adjust is tuned against the real strings
+   the site renders, not against a sample: Archivo is a variable face used from
+   weight 200 to 800, so one ratio cannot match every instance, and a ratio
+   measured at a single weight left the fallback 6% narrow on real headings.
+   102.00% is the fit over the prose and headings that actually set block
+   height. scripts/dev/font-fit.mjs reports the residual.
+*/
+@font-face {
+  font-family: 'Archivo fallback';
+  src: local('Arial'), local('Helvetica'), local('Liberation Sans');
+  size-adjust: 102.00%;
+  ascent-override: 86.08%;
+  descent-override: 20.59%;
+  line-gap-override: 0%;
+}
+
+/* IBM Plex Sans 1025/-275 per 1000 upem, fitted at 101.00% of Arial. */
+@font-face {
+  font-family: 'IBM Plex Sans fallback';
+  src: local('Arial'), local('Helvetica'), local('Liberation Sans');
+  size-adjust: 101.00%;
+  ascent-override: 101.49%;
+  descent-override: 27.23%;
+  line-gap-override: 0%;
+}
+
+/* IBM Plex Mono 1025/-275 per 1000 upem, measured at 99.66% of Menlo. */
+@font-face {
+  font-family: 'IBM Plex Mono fallback';
+  src: local('Menlo'), local('Consolas'), local('DejaVu Sans Mono');
+  size-adjust: 99.66%;
+  ascent-override: 102.85%;
+  descent-override: 27.59%;
+  line-gap-override: 0%;
+}

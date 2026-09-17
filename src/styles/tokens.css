@@ -1,0 +1,172 @@
+/*
+  Design tokens. Source of truth: Claude - Site Details/02-design-system.md, v2.
+
+  Values are declared once inside @theme, under the namespace Tailwind requires
+  to generate a utility from them. The :root alias block maps the design
+  system's documented names onto the same values, so var(--ink) and the `text-ink`
+  utility resolve to one value living in one place. Names are aliased; values
+  are never duplicated.
+
+  Contrast: every colour here is measured against all three grounds, --bg,
+  --surface and --surface-2. See 02 section 2 for the table. --coral is the only
+  token that may not set text below 24px.
+*/
+
+@theme {
+  /* ---- Ground and ink. 02 section 2. ---- */
+  --color-bg: #f8f8f5; /* page ground, warm white */
+  --color-surface: #ffffff; /* cards, panels */
+  --color-surface-2: #f3f3ef; /* inset fills, caption bars, chip rows */
+  --color-ink: #111111; /* primary text */
+  --color-muted: #626262; /* secondary text */
+  --color-faint: #6f6f6a; /* labels, captions. 4.75 / 5.05 / 4.54 */
+  --color-border: #d8d8d3; /* hairlines */
+  --color-border-strong: #b8b8b2; /* hover, emphasis */
+  --color-chart-fill: #e8ebef; /* pale chart fill, track backgrounds */
+  --color-focus: #2355d8;
+
+  /*
+    ---- Category hues. Six, each with a role. ----
+    These carry borders, tinted fills, large figures and category labels. Colour
+    categorises here; it never decorates, and every hue ships with its label in
+    text beside it.
+  */
+  --color-blue: #2355d8; /* primary accent, links, Systems, Degrees, Case 02 */
+  --color-green: #0f7a5c; /* Data and Reporting, Grades and Honors, positive outcomes */
+  --color-amber: #9a6300; /* Programming, Scholarships */
+  --color-purple: #6b3fbf; /* Clubs, secondary categorisation */
+  --color-coral: #f05a3f; /* Case 01, emphasis marks, the hero rule. 24px and above only */
+  --color-graphite: #111111; /* Case 03, neutral category */
+
+  /* Soft companions for tinted fills, roughly eight percent against --surface. */
+  --color-blue-soft: #edf1fc;
+  --color-green-soft: #e9f4f0;
+  --color-amber-soft: #fbf3e4;
+  --color-purple-soft: #f2edfb;
+  --color-coral-soft: #fdeeeb;
+
+  /* ---- Status. Separate from category, state only. ---- */
+  --color-good: #1b7e54;
+  --color-warn: #916716;
+  --color-crit: #c04539;
+
+  /* ---- Type families. 02 section 3. ---- */
+  --font-display: 'Archivo', 'Archivo fallback', system-ui, sans-serif;
+  --font-body: 'IBM Plex Sans', 'IBM Plex Sans fallback', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'IBM Plex Mono fallback', ui-monospace, monospace;
+
+  /* ---- Spacing. 02 section 4. ---- */
+  --spacing-s1: 4px;
+  --spacing-s2: 8px;
+  --spacing-s3: 12px;
+  --spacing-s4: 16px;
+  --spacing-s5: 24px;
+  --spacing-s6: 32px;
+  --spacing-s7: 48px;
+  --spacing-s8: 64px;
+  --spacing-s9: 96px;
+  --spacing-s10: 128px;
+  --spacing-s11: 192px;
+
+  /* ---- Breakpoints. 02 section 4. ---- */
+  --breakpoint-s: 480px;
+  --breakpoint-m: 768px;
+  --breakpoint-l: 1024px;
+  --breakpoint-xl: 1280px;
+
+  --container-content: 1120px;
+  --container-reading: 720px;
+}
+
+/*
+  Alias layer. The design system documents these names and the bespoke CSS uses
+  them directly. Each points at the single definition above.
+*/
+:root {
+  --bg: var(--color-bg);
+  --surface: var(--color-surface);
+  --surface-2: var(--color-surface-2);
+  --ink: var(--color-ink);
+  --muted: var(--color-muted);
+  --faint: var(--color-faint);
+  --border: var(--color-border);
+  --border-strong: var(--color-border-strong);
+  --chart-fill: var(--color-chart-fill);
+  --focus: var(--color-focus);
+
+  --blue: var(--color-blue);
+  --green: var(--color-green);
+  --amber: var(--color-amber);
+  --purple: var(--color-purple);
+  --coral: var(--color-coral);
+  --graphite: var(--color-graphite);
+
+  --blue-soft: var(--color-blue-soft);
+  --green-soft: var(--color-green-soft);
+  --amber-soft: var(--color-amber-soft);
+  --purple-soft: var(--color-purple-soft);
+  --coral-soft: var(--color-coral-soft);
+
+  --good: var(--color-good);
+  --warn: var(--color-warn);
+  --crit: var(--color-crit);
+
+  --font-display: 'Archivo', 'Archivo fallback', system-ui, sans-serif;
+  --font-body: 'IBM Plex Sans', 'IBM Plex Sans fallback', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'IBM Plex Mono fallback', ui-monospace, monospace;
+
+  --s-1: var(--spacing-s1);
+  --s-2: var(--spacing-s2);
+  --s-3: var(--spacing-s3);
+  --s-4: var(--spacing-s4);
+  --s-5: var(--spacing-s5);
+  --s-6: var(--spacing-s6);
+  --s-7: var(--spacing-s7);
+  --s-8: var(--spacing-s8);
+  --s-9: var(--spacing-s9);
+  --s-10: var(--spacing-s10);
+  --s-11: var(--spacing-s11);
+
+  --bp-s: var(--breakpoint-s);
+  --bp-m: var(--breakpoint-m);
+  --bp-l: var(--breakpoint-l);
+  --bp-xl: var(--breakpoint-xl);
+
+  /* ---- Type scale. 02 section 3. ---- */
+  --t-hero: clamp(4rem, 13vw, 11rem);
+  --t-hero-alt: clamp(4rem, 13vw, 11rem);
+  --t-display: clamp(2.25rem, 5vw, 4rem);
+  --t-h2: clamp(1.75rem, 3vw, 2.5rem);
+  --t-h3: clamp(1.125rem, 1.6vw, 1.5rem);
+  --t-stat: clamp(1.75rem, 3vw, 2.75rem);
+  --t-lede: clamp(1rem, 1.1vw, 1.1875rem);
+  --t-body: 1rem;
+  --t-small: 0.875rem;
+  --t-label: 0.6875rem;
+  --t-data: 0.8125rem;
+
+  /* ---- Grid. 02 section 4. ---- */
+  --outer-margin: clamp(20px, 5vw, 80px);
+  --gutter: 24px;
+  --content-max: 1120px;
+  --reading-max: 720px;
+
+  /*
+    ---- Surfaces and elevation. 02 section 5. This is what changed most. ----
+
+    One elevation step, never two. If a shadow reads as a shadow rather than as
+    separation, it is too strong. Flat always: nav, footer, hero, full width
+    section grounds, and every hairline rule.
+  */
+  --r: 4px; /* cards, panels, containers */
+  --r-sm: 2px; /* chips, tags, small controls */
+  --shadow-1: 0 1px 2px rgba(17, 17, 17, 0.04), 0 2px 8px rgba(17, 17, 17, 0.06);
+  --shadow-2: 0 2px 4px rgba(17, 17, 17, 0.06), 0 8px 24px rgba(17, 17, 17, 0.08);
+
+  /* ---- Motion. 02 section 7. ---- */
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --dur-fast: 150ms;
+  --dur-slow: 350ms;
+
+  color-scheme: light;
+}

@@ -1,0 +1,79 @@
+---
+/*
+  02-design-system.md section 6, strings from 04-site-copy-interior.md.
+
+  1px top border, --s-8 vertical padding. Name and year left at --t-small,
+  three link labels right at --t-label. The confidentiality note sits beneath
+  at --t-data in --faint.
+*/
+import { FOOTER } from '../data/copy/system';
+---
+
+<footer class="footer">
+  <div class="shell">
+    <div class="row">
+      <p class="t-small">{FOOTER.line}</p>
+      <ul class="links">
+        {
+          FOOTER.links.map((link) => (
+            <li>
+              <a
+                class="t-label"
+                href={link.href}
+                rel={link.href.startsWith('http') ? 'me noopener' : undefined}
+              >
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+    <p class="t-data note">{FOOTER.note}</p>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    border-top: 1px solid var(--border);
+    padding-block: var(--s-8);
+  }
+
+  .row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-5);
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-6);
+  }
+
+  .links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--muted);
+    transition: color var(--dur-fast) var(--ease);
+  }
+
+  .links a:hover {
+    color: var(--ink);
+  }
+
+  .note {
+    margin-top: var(--s-5);
+    color: var(--faint);
+  }
+
+  @media (min-width: 768px) {
+    .row {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--s-6);
+    }
+  }
+</style>

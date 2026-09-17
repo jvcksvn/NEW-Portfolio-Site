@@ -1,0 +1,403 @@
+---
+/*
+  02 section 6, "Thumbnail carousel", and its About photo variant.
+
+  Two geometries:
+
+  - peek. Three items fully visible with a half cell peeking at each edge, so
+    the viewport spans four cells and four gaps. Writing, Analysis and the
+    About photos use this. Three fully visible with a peek is what gives the
+    blur gradient somewhere to happen without widening the row.
+  - full. Seven items across, no peek. The Library uses this, because there are
+    twenty three and the density is the point.
+
+  Blur is graduated by distance from the centre, never flat. The About variant
+  turns it off entirely: those are a person's own pictures rather than
+  thumbnails standing in for something else, and blurring them reads as a
+  defect rather than as depth.
+
+  | carousel             | fully visible | clear        | light  | full   |
+  |----------------------|---------------|--------------|--------|--------|
+  | Writing and Analysis | 3 plus peek   | centre       | +-1    | +-2    |
+  | Library              | 7             | centre, +-1  | +-2    | +-3    |
+  | About photos         | 3 plus peek   | all of them  | none   | none   |
+
+  Each carousel opens at its middle rather than at one end. A carousel that
+  opens at one end reads as a list that has not been scrolled.
+
+  Keyboard: the arrows are real buttons, left and right move the carousel when
+  it has focus, and only the centred item is in the tab order. Under 768px it
+  becomes a horizontally scrolling row with snap points and no blur.
+
+  Every image carries explicit dimensions, so moving the window shifts nothing.
+*/
+import Thumbnail from './Thumbnail.astro';
+import Icon from '../Icon.astro';
+import type { ImageMetadata } from 'astro';
+
+export interface CarouselItem {
+  /** Absent on the photo variant: a photograph is not a link. */
+  href?: string;
+  title?: string;
+  description?: string;
+  image: ImageMetadata | null;
+  /** Photo variant only. Thumbnails are decorative beside their own title. */
+  alt?: string;
+}
+
+interface Props {
+  id: string;
+  items: CarouselItem[];
+  /** Items fully visible: 3 with a peeking pair either side, or 7 across. */
+  visible: 3 | 7;
+  label: string;
+  /** Covers are portrait, thumbnails landscape, photographs 4:3. */
+  shape?: 'landscape' | 'portrait' | 'photo';
+  /** `photos` drops the blur, the dimming, the titles and the links. */
+  variant?: 'thumbs' | 'photos';
+  /** 1 based opening item. Defaults to the middle of the set. */
+  start?: number;
+}
+
+const {
+  id,
+  items,
+  visible,
+  label,
+  shape = 'landscape',
+  variant = 'thumbs',
+  start,
+} = Astro.props;
+
+const photos = variant === 'photos';
+const geometry = visible === 7 ? 'full' : 'peek';
+const flank = visible === 7 ? 3 : 2;
+
+/*
+  How far from the centre stays completely clear. The photo variant sets it to
+  the full flank, which is how "no blur and no dimming" is expressed without a
+  second code path.
+*/
+const clearRadius = photos ? flank : visible === 7 ? 1 : 0;
+
+/* Seven photos open on 3, per 09. Everything else opens at its own middle. */
+const startIndex = Math.min(
+  Math.max((start ?? Math.ceil(items.length / 2)) - 1, 0),
+  items.length - 1,
+);
+
+const width = shape === 'portrait' ? 150 : shape === 'photo' ? 420 : 300;
+---
+
+<div
+  class="carousel"
+  data-carousel={id}
+  data-flank={flank}
+  data-clear={clearRadius}
+  data-start={startIndex}
+  data-geometry={geometry}
+  data-variant={variant}
+  style={`--flank:${flank};--visible:${visible}`}
+  data-shape={shape}
+>
+  <button class="arrow prev" type="button" aria-label={`Previous, ${label}`} data-dir="-1">
+    <Icon name="arrow-right" size={16} />
+  </button>
+
+  <div class="viewport">
+    <ul class="track" role="list">
+      {
+        items.map((item, i) => (
+          <li class="item" data-index={i}>
+            {photos ? (
+              <span class="frame">
+                <Thumbnail src={item.image} alt={item.alt ?? ''} width={width} class="thumb" />
+              </span>
+            ) : (
+              <a href={item.href} tabindex="-1">
+                {/*
+                  Decorative: the link already carries the title as visible
+                  text, so an alt repeating it makes a screen reader read every
+                  item twice. axe flagged exactly that on the essay carousel.
+                */}
+                <span class="frame">
+                  <Thumbnail src={item.image} alt="" width={width} class="thumb" />
+                </span>
+                <span class="title t-small">{item.title}</span>
+                {item.description && <span class="desc t-data">{item.description}</span>}
+              </a>
+            )}
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+
+  <button class="arrow next" type="button" aria-label={`Next, ${label}`} data-dir="1">
+    <Icon name="arrow-right" size={16} />
+  </button>
+
+  <p class="position t-data" aria-live="polite" data-position></p>
+</div>
+
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>('[data-carousel]')) {
+    const track = root.querySelector<HTMLElement>('.track');
+    const items = Array.from(root.querySelectorAll<HTMLElement>('.item'));
+    const position = root.querySelector<HTMLElement>('[data-position]');
+    const flank = Number(root.dataset.flank ?? 1);
+    const clearRadius = Number(root.dataset.clear ?? 0);
+    if (!track || items.length === 0) continue;
+
+    let active = Math.min(Number(root.dataset.start ?? 0), items.length - 1);
+
+    const desktop = () => window.matchMedia('(min-width: 768px)').matches;
+
+    const render = () => {
+      /* Below 768px this is a plain scrolling row: no centring, no blur. */
+      if (!desktop()) {
+        for (const item of items) {
+          item.dataset.state = 'row';
+          item.dataset.center = 'false';
+          item.querySelector('a')?.setAttribute('tabindex', '0');
+        }
+        if (position) position.textContent = '';
+        return;
+      }
+
+      items.forEach((item, i) => {
+        const offset = i - active;
+        const distance = Math.abs(offset);
+
+        /*
+          Four states, not two. One flat blur on everything but the middle
+          reads as a broken image rather than as depth, so the ring nearest the
+          centre takes a light blur and only the outermost ring takes the full
+          one. clearRadius carries the Library's second clear ring, and the
+          photo variant's total absence of blur.
+        */
+        item.dataset.state =
+          distance <= clearRadius ? 'clear'
+          : distance > flank ? 'hidden'
+          : distance === flank ? 'full'
+          : 'light';
+        item.dataset.center = distance === 0 ? 'true' : 'false';
+        item.style.setProperty('--offset', String(offset));
+        /* Only the centered item is in the tab order. */
+        item.querySelector('a')?.setAttribute('tabindex', distance === 0 ? '0' : '-1');
+      });
+
+      track.style.setProperty('--active', String(active));
+      if (position) position.textContent = `${active + 1} of ${items.length}`;
+    };
+
+    const move = (dir: number) => {
+      active = Math.max(0, Math.min(items.length - 1, active + dir));
+      render();
+    };
+
+    for (const button of root.querySelectorAll<HTMLButtonElement>('.arrow')) {
+      button.addEventListener('click', () => move(Number(button.dataset.dir)));
+    }
+
+    root.addEventListener('keydown', (event) => {
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+      event.preventDefault();
+      move(event.key === 'ArrowRight' ? 1 : -1);
+      root.querySelector<HTMLElement>('.item[data-center="true"] a')?.focus();
+    });
+
+    window.addEventListener('resize', render);
+    render();
+  }
+</script>
+
+<style>
+  .carousel {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--s-3);
+  }
+
+  .viewport {
+    overflow: hidden;
+    min-width: 0;
+  }
+
+  .track {
+    display: flex;
+    gap: var(--s-4);
+    padding-block: var(--s-3);
+  }
+
+  .item a {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+    color: var(--ink);
+  }
+
+  .frame {
+    display: block;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    box-shadow: var(--shadow-1);
+    background: var(--surface);
+    transition:
+      box-shadow var(--dur-fast) var(--ease),
+      border-color var(--dur-fast) var(--ease),
+      opacity var(--dur-slow) var(--ease);
+  }
+
+  .item a:hover .frame {
+    box-shadow: var(--shadow-2);
+    border-color: var(--border-strong);
+  }
+
+  .frame :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* Photographs are mixed aspect. A fixed frame keeps the row even and the
+     box reserved before the bytes arrive. */
+  .carousel[data-shape='photo'] .frame {
+    aspect-ratio: 4 / 3;
+  }
+
+  .carousel[data-shape='photo'] .frame :global(img) {
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .title { color: var(--ink); }
+
+  /*
+    02 section 6 calls for a one line description. The collections carry full
+    excerpts, which ran to seven lines in a narrow cell and left a hole between
+    the carousel and the section link. Clamped to two lines with that height
+    reserved: the source copy is untouched, the block stops changing height
+    with whichever item is centred, and nothing shifts.
+  */
+  .desc {
+    color: var(--muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: calc(var(--t-data) * 1.5 * 2);
+  }
+
+  .arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    color: var(--muted);
+    transition:
+      color var(--dur-fast) var(--ease),
+      border-color var(--dur-fast) var(--ease);
+  }
+
+  .arrow:hover { color: var(--ink); border-color: var(--border-strong); }
+  .prev :global(svg) { transform: rotate(180deg); }
+
+  .position {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: var(--faint);
+  }
+
+  /* ---- Mobile: a scrolling row with snap points, no blur, no centring ---- */
+  @media (max-width: 767px) {
+    .carousel { grid-template-columns: minmax(0, 1fr); }
+    .arrow { display: none; }
+
+    .viewport {
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      margin-inline: calc(var(--outer-margin) * -1);
+      padding-inline: var(--outer-margin);
+    }
+
+    .item { flex: 0 0 62vw; scroll-snap-align: center; }
+    .item[data-state] .frame { filter: none; opacity: 1; }
+    .item[data-state='row'] { filter: none; opacity: 1; }
+  }
+
+  /* ---- Desktop ---- */
+  @media (min-width: 768px) {
+    /*
+      The cell is a fraction of the viewport rather than a fixed width, and the
+      track slides by whole cells. An earlier version padded the viewport by a
+      flank's width to centre the active item, which made the box far wider than
+      its column and scrolled the page sideways at 768 and 1024.
+    */
+    .viewport { --gap: var(--s-4); }
+    .track { gap: var(--gap); transition: transform var(--dur-slow) var(--ease); }
+    .item {
+      flex: 0 0 var(--cell);
+      transition:
+        opacity var(--dur-slow) var(--ease),
+        filter var(--dur-slow) var(--ease);
+    }
+
+    /* Seven across, nothing peeking. */
+    .carousel[data-geometry='full'] .viewport {
+      --cell: calc((100% - (var(--visible) - 1) * var(--gap)) / var(--visible));
+    }
+
+    .carousel[data-geometry='full'] .track {
+      transform: translateX(calc((var(--flank) - var(--active, 0)) * (var(--cell) + var(--gap))));
+    }
+
+    /*
+      Three across with a half cell peeking at each edge: the viewport spans
+      four cells and four gaps, and the active item's left edge sits one and a
+      half cells plus two gaps in from the left.
+    */
+    .carousel[data-geometry='peek'] .viewport {
+      --cell: calc((100% - 4 * var(--gap)) / 4);
+    }
+
+    .carousel[data-geometry='peek'] .track {
+      transform: translateX(
+        calc(1.5 * var(--cell) + 2 * var(--gap) - var(--active, 0) * (var(--cell) + var(--gap)))
+      );
+    }
+
+    .item[data-state='clear'] { filter: none; }
+    .item[data-state='light'] { filter: blur(1px); }
+    .item[data-state='full'] { filter: blur(2.5px); }
+    .item[data-state='hidden'] { opacity: 0; pointer-events: none; }
+
+    /*
+      The dimming sits on the thumbnail, not on the whole item.
+
+      02 section 8's contrast rule is not optional, and --ink at 55 percent
+      composites to #797978 on the ground, which is 4.10 and fails AA. axe
+      caught it on four titles. The title instead steps down the neutral ramp
+      at full opacity, which reads as the same recession and stays legible:
+      --muted is 5.73 on the ground and --faint is 4.75.
+    */
+    .item[data-state='light'] .frame { opacity: 0.8; }
+    .item[data-state='full'] .frame { opacity: 0.55; }
+    .item[data-state='light'] .title { color: var(--muted); }
+    .item[data-state='full'] .title { color: var(--faint); }
+
+    /* The description belongs to the centred item alone, clear ring or not. */
+    .item[data-center='false'] .desc { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .track { transition: none; }
+    .item { transition: none; }
+  }
+</style>

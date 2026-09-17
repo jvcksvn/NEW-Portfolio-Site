@@ -1,0 +1,27 @@
+---
+/*
+  The three case tiles as one grid. Used by /projects and by the landing's
+  Projects teaser, so the two never drift apart.
+*/
+import CaseTile from './CaseTile.astro';
+import { CASE_TILES } from '../../data/copy/projects';
+---
+
+<div class="tile-grid">
+  {CASE_TILES.map((tile) => <CaseTile tile={tile} />)}
+</div>
+
+<style>
+  .tile-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--s-5);
+  }
+
+  @media (min-width: 1024px) {
+    .tile-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--gutter);
+    }
+  }
+</style>

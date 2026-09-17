@@ -1,0 +1,51 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { NOT_FOUND } from '../data/copy/system';
+import { titleFor } from '../lib/seo';
+---
+
+<BaseLayout title={titleFor(NOT_FOUND.title)} description={NOT_FOUND.meta} noindex>
+  <section class="shell system">
+    <h1 class="t-display">{NOT_FOUND.title}</h1>
+    <p class="t-lede reading">{NOT_FOUND.body}</p>
+    <ul class="exits">
+      {
+        NOT_FOUND.links.map((link) => (
+          <li>
+            <a class="t-label" href={link.href}>
+              {link.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</BaseLayout>
+
+<style>
+  .system {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-5);
+    padding-block: var(--s-10) var(--s-11);
+  }
+
+  .exits {
+    display: flex;
+    gap: var(--s-6);
+    margin-top: var(--s-2);
+  }
+
+  .exits a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--ink);
+    border-bottom: 1px solid var(--border-strong);
+    transition: border-color var(--dur-fast) var(--ease);
+  }
+
+  .exits a:hover {
+    border-color: var(--blue);
+  }
+</style>

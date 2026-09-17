@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://jacksonbarker.com/sitemap-index.xml

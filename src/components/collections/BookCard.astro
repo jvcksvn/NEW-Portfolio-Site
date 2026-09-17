@@ -1,0 +1,98 @@
+---
+/*
+  02 section 6, "Card grid" cell, for /library.
+
+  Cover, title, author, and the one line verdict. No rating, no stars, no score,
+  and no number of any kind above the verdict, per 04. Tags and the year read
+  are not rendered: all filtering is removed, which retires the eighteen
+  unresolved yearRead values because nothing sorts or filters on them.
+
+  11: cover alt text is the title and author, not "Book cover of".
+*/
+import Thumbnail from '../shared/Thumbnail.astro';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  href: string;
+  title: string;
+  author: string;
+  verdict: string;
+  cover: ImageMetadata | null;
+}
+
+const { href, title, author, verdict, cover } = Astro.props;
+---
+
+<article class="book-card card card-lift" data-card>
+  <a href={href}>
+    {
+      cover && (
+        <span class="frame">
+          <Thumbnail
+            src={cover}
+            alt={`${title}, ${author}`}
+            width={240}
+            sizes="(min-width: 1024px) 200px, (min-width: 768px) 30vw, 60vw"
+          />
+        </span>
+      )
+    }
+
+    <span class="body">
+      <h2 class="t-h3">{title}</h2>
+      <span class="author t-data">{author}</span>
+      <span class="verdict t-small">{verdict}</span>
+    </span>
+  </a>
+</article>
+
+<style>
+  .book-card { overflow: hidden; }
+
+  .book-card a {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    color: var(--ink);
+  }
+
+  /*
+    The covers are scanned at different aspect ratios, so a box sized by the
+    image reflows as each one arrives and the grid shifts under it. Measured at
+    CLS 0.50 on /library. The frame reserves a fixed 2 to 3 box and the cover is
+    contained inside it, so the space is correct before any bytes land.
+  */
+  .frame {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--s-4) var(--s-4) 0;
+    background: var(--surface);
+    aspect-ratio: 2 / 3;
+  }
+
+  /*
+    The image fills the reserved frame rather than sizing itself from its own
+    intrinsic ratio, which is what still shifted after the frame was fixed: the
+    img box was laid out at the cover's ratio and snapped when the bytes landed.
+  */
+  .frame :global(img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: var(--r-sm);
+  }
+
+  .body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+    padding: var(--s-4);
+    flex: 1;
+  }
+
+  .book-card h2 { color: var(--ink); }
+  .author { color: var(--faint); }
+  .verdict { color: var(--muted); }
+</style>

@@ -1,0 +1,40 @@
+---
+/*
+  The interactive resume, mounted on the landing page.
+
+  08: "/resume and the landing page render the same island, from one component,
+  not two implementations." This file and src/pages/resume.astro both render
+  InteractiveResume; neither carries markup of its own.
+
+  ---- On the reservation this slot used to carry ----------------------------
+
+  Stage 3 reserved 640px on desktop and 560px on mobile, flagged at the time as a
+  placeholder to be measured once the island existed. Measured, both numbers were
+  wrong and the whole approach was wrong.
+
+  The active panel's height is a function of viewport width, because the copy
+  rewraps: the planner panel measures 823px at 1280, 955px at 1024, 1393px at
+  390, and 1607px at 320. No single reserved height is correct at more than one
+  width. A fixed 640px would have under reserved by 767px at 320 and over
+  reserved at none, shifting the page every time.
+
+  It is also unnecessary. Astro server renders the island's markup regardless of
+  the client directive, so the first paint already contains the planner panel at
+  its true height. Measured across nine widths, the viewport box equals the panel
+  height exactly, delta 0px at every one, before hydration and after.
+
+  So the reservation is removed rather than corrected to a different wrong
+  number. The content reserves its own space, which is the only thing that
+  survives a copy change. CLS on the landing is 0 with the island present, the
+  same as it was without it.
+*/
+import InteractiveResume from './resume/InteractiveResume';
+import PhotoRail from './shared/PhotoRail.astro';
+import '../styles/resume.css';
+---
+
+<div class="resume-slot">
+  <InteractiveResume client:visible>
+    <PhotoRail slot="collage" id="landing-resume-photos" />
+  </InteractiveResume>
+</div>

@@ -1,0 +1,32 @@
+---
+/*
+  /projects. Index copy from 04-site-copy-interior.md, tiles from the shared
+  CaseTileGrid that the landing also renders.
+*/
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CaseTileGrid from '../components/projects/CaseTileGrid.astro';
+import { PROJECTS_INDEX } from '../data/copy/projects';
+import { titleFor } from '../lib/seo';
+import { ROUTES } from '../lib/routes';
+---
+
+<BaseLayout title={titleFor(ROUTES.projects.label)} description={PROJECTS_INDEX.meta}>
+  <section class="shell projects-page">
+    <h1 class="t-display">{PROJECTS_INDEX.h1}</h1>
+    <p class="t-lede standfirst reading">{PROJECTS_INDEX.standfirst}</p>
+
+    <CaseTileGrid />
+  </section>
+</BaseLayout>
+
+<style>
+  .projects-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-5);
+    padding-block: var(--s-8) var(--s-10);
+  }
+
+  .standfirst { color: var(--muted); }
+
+</style>

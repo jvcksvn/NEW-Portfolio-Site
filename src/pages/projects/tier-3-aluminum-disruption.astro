@@ -1,0 +1,117 @@
+---
+/*
+  Case 01. Every section renders content the source document states. The three
+  figures are bespoke components: a multi-tier supply network (Fig 1.1), the
+  technical gate (Fig 1.2), and the mitigation bars (Fig 1.3). Each is built
+  only from the node lists and values the case document's figure descriptions
+  carry.
+*/
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CaseShell from '../../components/projects/CaseShell.astro';
+import SectionRail from '../../components/projects/SectionRail.astro';
+import AuthoritySplit from '../../components/projects/AuthoritySplit.astro';
+import DecisionCallout from '../../components/projects/DecisionCallout.astro';
+import Figure from '../../components/projects/Figure.astro';
+import SupplyNetwork from '../../components/projects/figures/SupplyNetwork.astro';
+import GateFlow from '../../components/projects/figures/GateFlow.astro';
+import BarFigure from '../../components/projects/figures/BarFigure.astro';
+import { CASE_01 as c } from '../../data/cases/tier-3-aluminum-disruption';
+import '../../styles/case.css';
+---
+
+<BaseLayout title={`${c.title} | Jackson Barker`} description={c.meta}>
+  <CaseShell case={c}>
+    <SectionRail number={c.context.number} label={c.context.label} title={c.context.title}>
+      {c.context.body.map((p) => <p class="case-p">{p}</p>)}
+      <blockquote class="case-callout t-lede">{c.context.callout}</blockquote>
+
+      <Figure
+        number="Fig. 1.1"
+        finding="One upstream limiter fed ten stamping nodes across four countries; the depth is what made exposure hard to see."
+        label="Supply network from the Tier 3 hot mill through a Tier 2 coil processor to ten Tier 1 stamping nodes across four countries, then to production"
+      >
+        <SupplyNetwork />
+      </Figure>
+    </SectionRail>
+
+    <SectionRail number={c.constraints.number} label={c.constraints.label} title={c.constraints.title}>
+      <ol class="case-terms">
+        {
+          c.constraints.items.map((item) => (
+            <li>
+              <strong>{item.term}</strong>
+              <span>{item.body}</span>
+            </li>
+          ))
+        }
+      </ol>
+    </SectionRail>
+
+    <SectionRail number={c.authority.number} label={c.authority.label} title={c.authority.title}>
+      {c.authority.body.map((p) => <p class="case-p">{p}</p>)}
+      <AuthoritySplit owned={c.authority.owned} notOwned={c.authority.notOwned} />
+    </SectionRail>
+
+    <SectionRail number={c.approach.number} label={c.approach.label} title={c.approach.title}>
+      <ol class="case-terms">
+        {
+          c.approach.items.map((item) => (
+            <li>
+              <strong>{item.term}</strong>
+              <span>{item.body}</span>
+            </li>
+          ))
+        }
+      </ol>
+
+      <h3 class="case-subhead t-label">Three decisions, by kind</h3>
+      <div class="case-decisions">
+        {c.decisions.map((d) => <DecisionCallout kind={d.kind} title={d.title} body={d.body} />)}
+      </div>
+
+      <Figure
+        number="Fig. 1.2"
+        finding="Alternate material stayed scenario coverage until it cleared review, never counted as confirmed supply."
+        label="Technical gate: material available, engineering review, crash and forming validation over three to four weeks, quality approval, then usable Clear to Build coverage"
+      >
+        <GateFlow />
+      </Figure>
+    </SectionRail>
+
+    <SectionRail number={c.result.number} label={c.result.label} title={c.result.title}>
+      {c.result.body.map((p) => <p class="case-p">{p}</p>)}
+
+      <div class="case-block">
+        <h3 class="t-label">{c.result.signalQuality.label}</h3>
+        <ul class="case-list">
+          {c.result.signalQuality.items.map((i) => <li class="t-data">{i}</li>)}
+        </ul>
+        <p class="provenance t-data">{c.result.signalQuality.provenance}</p>
+      </div>
+
+      <div class="case-block">
+        <h3 class="t-label">{c.result.systemAccuracy.label}</h3>
+        <ul class="case-list">
+          {c.result.systemAccuracy.items.map((i) => <li class="t-data">{i}</li>)}
+        </ul>
+      </div>
+
+      <Figure
+        number="Fig. 1.3"
+        finding="No single lever solved it; the portfolio ran against one Clear to Build risk view."
+        label="Mitigation portfolio: 42 material changes, 38 coil reallocations, 12 production resequences and 8 expedites"
+      >
+        <BarFigure
+          items={[
+            { label: 'Material changes', value: 42 },
+            { label: 'Coil reallocations', value: 38, note: '24 external and 14 internal' },
+            { label: 'Production resequences', value: 12 },
+            { label: 'Expedites', value: 8 },
+          ]}
+        />
+      </Figure>
+    </SectionRail>
+
+    <p slot="lesson" class="case-lesson t-lede">{c.lesson}</p>
+  </CaseShell>
+</BaseLayout>

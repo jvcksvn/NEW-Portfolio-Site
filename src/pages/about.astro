@@ -1,0 +1,41 @@
+---
+/*
+  /about. The copy from 09-about.md version 3, shipped as written.
+
+  09: the style guide does not govern this page. It opens with a greeting and
+  uses the second person. That is the point.
+
+  Version 4: the long body, an opening paragraph then three headings. The
+  resume's About tab keeps the short body and is untouched. The headshot above
+  the body and the collage beneath it are both gone; the photo rail replaces
+  them, beneath the copy. The body runs the full width of the section, not the
+  reading column.
+*/
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PhotoRail from '../components/shared/PhotoRail.astro';
+import AboutBody from '../components/shared/AboutBody.astro';
+import { ABOUT, ABOUT_BODY_LONG } from '../data/copy/about';
+import { titleFor } from '../lib/seo';
+import { ROUTES } from '../lib/routes';
+---
+
+<BaseLayout title={titleFor(ROUTES.about.label)} description={ABOUT.meta}>
+  <section class="shell about-page">
+    <h1 class="t-display">{ABOUT.h1}</h1>
+
+    {/* The long body. The resume's About tab carries the short one. */}
+    <AboutBody body={ABOUT_BODY_LONG} />
+
+    <PhotoRail id="about-photos" />
+  </section>
+</BaseLayout>
+
+<style>
+  .about-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-6);
+    padding-block: var(--s-8) var(--s-10);
+  }
+
+</style>

@@ -1,0 +1,68 @@
+---
+/*
+  Fig 3.2 — Root cause redesign. Before and after, stacked. The before row runs
+  eight components through four suppliers into an internal task force (status
+  red); the after row consolidates them at the packaging supplier (status green)
+  into a completed kit (case tint), with a dashed factory gate on the front end.
+  The red to green shift carries the argument. Replaces the two box-rows.
+
+  Decorative: the parent <Figure> carries the aria-label; this SVG is hidden.
+*/
+---
+
+<div class="rcr">
+  <svg viewBox="0 0 900 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+    <defs>
+      <marker id="rcr-crit" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0 L7 4 L0 8 z" class="ah-crit" /></marker>
+      <marker id="rcr-good" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0 L7 4 L0 8 z" class="ah-good" /></marker>
+    </defs>
+
+    <!-- BEFORE -->
+    <text class="hdr" x="0" y="20">BEFORE · FRAGMENTED, NO OWNER</text>
+    <rect class="box" x="0" y="36" width="150" height="52" rx="4" /><text class="t" x="75" y="60">8 components</text><text class="s" x="75" y="76">4 suppliers</text>
+    <rect class="box crit" x="220" y="36" width="150" height="52" rx="4" /><text class="t crit-t" x="295" y="60">Internal task force</text><text class="s crit-t" x="295" y="76">manual kitting</text>
+    <rect class="box alt" x="440" y="36" width="130" height="52" rx="4" /><text class="t" x="505" y="66">Customer</text>
+    <path class="conn crit-c" d="M150 62 H218" marker-end="url(#rcr-crit)" />
+    <path class="conn crit-c" d="M370 62 H438" marker-end="url(#rcr-crit)" />
+
+    <line class="rule" x1="0" y1="126" x2="900" y2="126" />
+
+    <!-- AFTER -->
+    <text class="hdr" x="0" y="164">AFTER · CONSOLIDATED + GATED</text>
+    <rect class="box" x="0" y="180" width="150" height="52" rx="4" /><text class="t" x="75" y="204">8 components</text><text class="s" x="75" y="220">4 suppliers</text>
+    <rect class="box good" x="220" y="180" width="170" height="52" rx="4" /><text class="t good-t" x="305" y="204">Packaging supplier</text><text class="s good-t" x="305" y="220">kits completed here</text>
+    <rect class="box tintbox" x="460" y="180" width="150" height="52" rx="4" /><text class="t tint-t" x="535" y="204">Completed kit</text><text class="s tint-t" x="535" y="220">to customer</text>
+    <path class="conn good-c" d="M150 206 H218" marker-end="url(#rcr-good)" />
+    <path class="conn good-c" d="M390 206 H458" marker-end="url(#rcr-good)" />
+
+    <!-- gate -->
+    <rect class="gate" x="680" y="168" width="200" height="76" rx="4" /><text class="t tint-t" x="780" y="198">Factory gate control</text><text class="s" x="780" y="216">no car ships without its kit</text>
+  </svg>
+</div>
+
+<style>
+  .rcr { min-width: 720px; }
+  svg { width: 100%; height: auto; display: block; }
+
+  .hdr { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.12em; fill: var(--faint); }
+  .rule { stroke: var(--border); stroke-width: 1; }
+
+  .box { fill: var(--surface); stroke: var(--border); stroke-width: 1.2; }
+  .box.alt { fill: var(--surface-2); }
+  .box.crit { fill: color-mix(in srgb, var(--crit) 10%, var(--surface)); stroke: var(--crit); stroke-width: 1.3; }
+  .box.good { fill: color-mix(in srgb, var(--good) 12%, var(--surface)); stroke: var(--good); stroke-width: 1.3; }
+  .box.tintbox { fill: color-mix(in srgb, var(--cs-tint, var(--ink)) 10%, var(--surface)); stroke: var(--cs-tint, var(--ink)); stroke-width: 1.3; }
+  .gate { fill: var(--surface-2); stroke: var(--cs-tint, var(--ink)); stroke-width: 1.3; stroke-dasharray: 5 4; }
+
+  .t { font-family: var(--font-display); font-weight: 700; font-size: 11.5px; fill: var(--ink); text-anchor: middle; }
+  .s { font-family: var(--font-mono); font-size: 10px; fill: var(--muted); text-anchor: middle; }
+  .crit-t { fill: var(--crit); }
+  .good-t { fill: var(--good); }
+  .tint-t { fill: var(--cs-tint, var(--ink)); }
+
+  .conn { fill: none; stroke-width: 1.5; }
+  .crit-c { stroke: var(--crit); opacity: 0.7; }
+  .good-c { stroke: var(--good); }
+  .ah-crit { fill: var(--crit); }
+  .ah-good { fill: var(--good); }
+</style>

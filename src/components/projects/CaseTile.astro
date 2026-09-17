@@ -1,0 +1,239 @@
+---
+/*
+  02 section 6, "Project panel". 03 section 5, version 3.
+
+  Two parts, not one card: a top card carrying the case number and the domain,
+  and a main card below carrying the title, the description and the stats. The
+  description is reinstated; without it the tile read as a bare stat block.
+
+  Stats use the 03 section 5 format: figure large and centred, unit on a smaller
+  second line where there is one, label beneath at --t-label.
+
+  A stat cell is three rows, and the figure row and the unit row are fixed
+  heights reserved in every cell whether or not that cell fills them. Only
+  "12 Week" fills its unit row; the other eight reserve theirs empty. Every
+  label therefore begins at the same offset, and every figure sits on one
+  centreline, with nothing measured at runtime and no per cell offsets.
+
+  The tint appears as the numeral outline and the top rule. It never sets small
+  text: --coral is 3.16 on the ground and may not carry text below 24px.
+
+  One component, two mount points: /projects and the landing.
+*/
+import { Image } from 'astro:assets';
+import Icon from '../Icon.astro';
+import { TILE_MARKS } from '../../data/assets';
+import type { CaseTile } from '../../data/copy/projects';
+
+interface Props {
+  tile: CaseTile;
+}
+
+const { tile } = Astro.props;
+---
+
+<a class="case-tile" href={tile.href} data-hue={tile.tint}>
+  <span class="top-card card">
+    <span class="numeral t-stat" aria-hidden="true">{tile.number}</span>
+    <span class="kicker t-label">{tile.kicker}</span>
+  </span>
+
+  <span class="main-card card card-lift">
+    <span class="tile-body">
+      <span class="title t-h3">{tile.title}</span>
+      <span class="description t-small">{tile.description}</span>
+    </span>
+
+    <span class="tile-stats">
+      {
+        tile.stats.map((stat) => (
+          <span class="stat">
+            <span class="row-figure">
+              {stat.mark ? (
+                /* Decorative: the label beneath carries the meaning, exactly as
+                   it does for a number. Both files are already monochrome. */
+                <Image src={TILE_MARKS[stat.mark]} alt="" widths={[120, 240]} sizes="120px" format="webp" loading="lazy" decoding="async" class="mark" />
+              ) : (
+                <span class:list={['figure', 't-stat', stat.small && 'is-small']}>{stat.figure}</span>
+              )}
+            </span>
+            <span class="row-unit">{stat.unit}</span>
+            <span class="row-label stat-label t-label">{stat.label}</span>
+          </span>
+        ))
+      }
+    </span>
+
+    <span class="tile-foot t-label">
+      <span>Read the case</span>
+      <Icon name="arrow-right" size={13} />
+    </span>
+  </span>
+</a>
+
+<style>
+  .case-tile {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+    color: var(--ink);
+  }
+
+  /* ---- Top card: number and domain ---- */
+  .top-card {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    padding: var(--s-3) var(--s-4);
+    border-top: 3px solid var(--hue);
+  }
+
+  /* Outlined numeral in the case tint. A mark, not text. */
+  .numeral {
+    color: transparent;
+    -webkit-text-stroke: 1px var(--hue);
+    line-height: 1;
+  }
+
+  .kicker { color: var(--faint); }
+
+  /* ---- Main card: title, description, stats ---- */
+  .main-card {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .tile-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
+    padding: var(--s-4);
+    flex: 1;
+  }
+
+  .description { color: var(--muted); }
+
+  .tile-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-top: 1px solid var(--border);
+    /* So a figure can be sized against the row it sits in. */
+    container-type: inline-size;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--s-4) var(--s-2);
+    text-align: center;
+    border-right: 1px solid var(--border);
+    min-width: 0;
+
+    /*
+      The three row heights. Tokens, not fractions: the three tiles are
+      separate containers and share no grid, so a fraction would resolve
+      independently in each one and the rows would not line up.
+
+      The figure row is 1.75 times the drawn glyph the supplied marks replaced,
+      which was 1.05 of --t-stat. Carrying the multiple here rather than on the
+      images is what makes the images size to the row instead of the row to the
+      images. The unit row is one line of the unit's own type.
+    */
+    --stat-figure-h: calc(var(--t-stat) * 1.05 * 1.75);
+    --stat-unit-h: calc(var(--t-stat) * 0.6 * 1.1);
+    /* Three lines: eight labels take two, "Rebuilt Fulfillment Process" takes
+       three, and a reserved row keeps every stat block the same height so the
+       rows align across tiles as well as within one. */
+    --stat-label-h: calc(var(--t-label) * 1.4 * 3);
+  }
+
+  .stat:last-child { border-right: 0; }
+
+  .row-figure {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: var(--stat-figure-h);
+    width: 100%;
+    min-width: 0;
+  }
+
+  .row-unit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: var(--stat-unit-h);
+  }
+
+  .row-label {
+    min-height: var(--stat-label-h);
+    margin-top: var(--s-2);
+  }
+
+  .figure {
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    white-space: nowrap;
+    /*
+      Centred on cap height, not on the em box. Archivo measures cap 0.686,
+      ascender 0.878 and descender 0.210 per 1000 upem, so with line-height 1
+      the cap centre sits 0.009em above the em box centre. Centring the box
+      alone leaves digits sitting visibly low beside an image that is centred
+      on its own bounds. This is a property of the typeface, applied to every
+      figure identically; it is not a per cell nudge.
+    */
+    transform: translateY(0.009em);
+  }
+
+  /*
+    One step down, to --t-h2, with a cap so it cannot overflow its cell.
+
+    Measured: at --t-h2 "<$20K" renders 121px wide where a three across cell
+    leaves 102px usable at 1440, and it overflowed by 12 to 18px from 1024 up.
+    Zeroing the cell padding does not recover that, so the step alone is not
+    enough. The cap is expressed against the stat row: 9cqi is the widest a
+    figure can be in a three across cell. Below 900px the row is one column and
+    --t-h2 wins, which is the intended size wherever it fits. This is a size,
+    not an alignment offset.
+  */
+  .figure.is-small { font-size: min(var(--t-h2), 9cqi); }
+
+  /* The marks size to the figure row, never the other way round. */
+  .row-figure :global(.mark) {
+    height: 100%;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+  }
+
+  /* About 60 percent of the figure, per 02 section 6. */
+  .row-unit {
+    font-family: var(--font-display);
+    font-size: calc(var(--t-stat) * 0.6);
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--ink);
+  }
+
+  .stat-label {
+    color: var(--muted);
+  }
+
+  .tile-foot {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+    padding: var(--s-4);
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    transition: color var(--dur-fast) var(--ease);
+  }
+
+  .tile-foot :global(svg) { transition: transform var(--dur-fast) var(--ease); }
+  .case-tile:hover .tile-foot { color: var(--ink); }
+  .case-tile:hover .tile-foot :global(svg) { transform: translateX(4px); }
+</style>

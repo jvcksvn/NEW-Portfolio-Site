@@ -1,0 +1,54 @@
+---
+/*
+  02 section 6, "Capability chip group".
+
+  A bordered container per category with a 2px left border in the category hue
+  and the category label at the top in that hue at --t-label. Inside, one chip
+  per item: --surface-2 fill, 1px border, --r-sm, --t-small.
+
+  The label is text in the hue, which is why every hue except --coral has to
+  clear AA at 11px. --coral is never used for a group.
+*/
+interface Props {
+  label: string;
+  items: readonly string[];
+  hue: 'blue' | 'green' | 'amber' | 'purple';
+}
+
+const { label, items, hue } = Astro.props;
+---
+
+<section class="chip-group card" data-hue={hue}>
+  <h3 class="group-label t-label">{label}</h3>
+  <ul class="chips">
+    {items.map((item) => <li class="chip t-small">{item}</li>)}
+  </ul>
+</section>
+
+<style>
+  .chip-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
+    padding: var(--s-4);
+    border-left: 2px solid var(--hue);
+  }
+
+  .group-label {
+    color: var(--hue);
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2);
+  }
+
+  .chip {
+    padding: var(--s-1) var(--s-3);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    color: var(--ink);
+  }
+</style>

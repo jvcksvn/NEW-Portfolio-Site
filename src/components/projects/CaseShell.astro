@@ -1,0 +1,118 @@
+---
+/*
+  The chrome shared by all three case pages: tag, title, deck, stat row, the
+  numbered sections, the closing lesson, and prev/next between cases.
+
+  Projects - Shared + Chrome.md supplied the component language. Its actual
+  strings are not used: its top bar brand, breadcrumbs and footer belong to a
+  standalone case study gallery with its own chrome, and this site already has a
+  nav and a footer. Taking its structure and not its strings is what 00's
+  precedence rule asks for. Reported.
+
+  --cs-tint is set once on the container, per 02 section 2. Everything inside
+  that would otherwise be accent colored inherits it.
+*/
+import StatRow from './StatRow.astro';
+import Icon from '../Icon.astro';
+import { CASE_TILES } from '../../data/copy/projects';
+import { ROUTES } from '../../lib/routes';
+
+interface Props {
+  case: {
+    slug: string;
+    tint: string;
+    tag: string;
+    title: string;
+    deck: string;
+    stats: ReadonlyArray<{ value: string; label: string }>;
+  };
+}
+
+const { case: c } = Astro.props;
+
+const index = CASE_TILES.findIndex((t) => t.href.endsWith(c.slug));
+const prev = index > 0 ? CASE_TILES[index - 1] : null;
+const next = index < CASE_TILES.length - 1 ? CASE_TILES[index + 1] : null;
+---
+
+<article class="case" data-tint={c.tint}>
+  <header class="shell case-head">
+    <p class="tag t-label">{c.tag}</p>
+    <h1 class="t-display">{c.title}</h1>
+    <p class="deck t-lede reading">{c.deck}</p>
+    <StatRow stats={c.stats} />
+  </header>
+
+  <div class="shell case-body">
+    <slot />
+  </div>
+
+  <div class="shell case-close">
+    <slot name="lesson" />
+  </div>
+
+  <nav class="shell case-nav" aria-label="Between cases">
+    <a class="t-label" href={ROUTES.projects.path}>
+      <Icon name="arrow-right" size={13} />
+      <span>All case studies</span>
+    </a>
+    <div class="case-nav-sides">
+      {prev && <a class="t-label" href={prev.href}><Icon name="arrow-right" size={13} /><span>{prev.title}</span></a>}
+      {next && <a class="t-label next" href={next.href}><span>{next.title}</span><Icon name="arrow-right" size={13} /></a>}
+    </div>
+  </nav>
+</article>
+
+<style>
+  .case { --cs-tint: var(--graphite); }
+  .case[data-tint='coral'] { --cs-tint: var(--coral); }
+  .case[data-tint='blue'] { --cs-tint: var(--blue); }
+  .case[data-tint='graphite'] { --cs-tint: var(--graphite); }
+
+  .case-head {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-5);
+    padding-block: var(--s-8) var(--s-7);
+  }
+
+  /* Coral at --t-label is 3.16:1 and fails AA. The tint carries the stat
+     row figures and the rules instead. */
+  .tag { color: var(--muted); }
+  .deck { color: var(--muted); }
+
+  .case-close {
+    padding-block: var(--s-7) var(--s-8);
+    border-top: 1px solid var(--border);
+  }
+
+  .case-nav {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+    padding-block: var(--s-6) var(--s-10);
+    border-top: 1px solid var(--border);
+  }
+
+  .case-nav-sides {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-5);
+    justify-content: space-between;
+  }
+
+  .case-nav a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    min-height: 44px;
+    color: var(--muted);
+    transition: color var(--dur-fast) var(--ease);
+  }
+
+  .case-nav a:hover { color: var(--ink); }
+
+  /* The back and prev arrows point left. */
+  .case-nav a :global(svg) { transform: rotate(180deg); }
+  .case-nav a.next :global(svg) { transform: none; }
+</style>

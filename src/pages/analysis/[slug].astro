@@ -1,0 +1,36 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EntryPage from '../../components/collections/EntryPage.astro';
+import { UNDATED } from '../../content.config';
+import { ROUTES } from '../../lib/routes';
+import '../../styles/prose.css';
+
+export async function getStaticPaths() {
+  const entries = (await getCollection('analysis')).filter((e) => !e.data.draft);
+  return entries.map((entry) => ({ params: { slug: entry.data.slug }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+
+/* Bracketed values are never rendered. */
+const meta = [
+  entry.data.date !== UNDATED ? entry.data.date : null,
+  `${entry.data.readingTime} min read`,
+  `${entry.data.wordCount} words`,
+].filter(Boolean) as string[];
+---
+
+<BaseLayout title={`${entry.data.title} | Jackson Barker`} description={entry.data.excerpt}
+  type="article"
+  article={{ headline: entry.data.title, description: entry.data.excerpt, section: "Analysis" }}>
+  <EntryPage
+    title={entry.data.title}
+    meta={meta}
+    backHref={ROUTES.analysis.path}
+    backLabel="All analysis"
+  >
+    <Content />
+  </EntryPage>
+</BaseLayout>

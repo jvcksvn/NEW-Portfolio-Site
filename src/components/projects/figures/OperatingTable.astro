@@ -1,0 +1,82 @@
+---
+/*
+  Fig 2.2. The illustrative operating table from the appendix of
+  Projects - Shared + Chrome.md, rendered as stated.
+
+  The document is explicit that the part IDs, values and supplier labels are
+  fabricated for illustration, and that note ships with the table rather than
+  being dropped. Wide, so it scrolls inside its own container per 02 section 4.
+*/
+const columns = ['Part', 'Status', 'In house', 'In transit', 'T1 FG and WIP', 'T2 raw at yield', 'Build per wk', 'ETA', 'Runout', 'Mitigation'];
+
+const rows = [
+  ['STP-1042', 'Stable', '1,400', '1,000', '1,700', '2,500 at 82%', '150', '10/18', '11/08', 'Covered to 11/08'],
+  ['STP-3318', 'Caution', '280', '200', '400', '600 at 80%', '100', '10/16', '10/23', 'Reallocate coil, push supplier'],
+  ['STP-4177', 'Urgent', '120', '150', '280', '500 at 72%', '50', '10/15', '10/21', 'Escalate, alt material, air'],
+  ['STP-2075', 'Stable', '2,100', '640', '1,250', '3,200 at 85%', '180', '10/19', '11/22', 'Covered to 11/22'],
+  ['STP-5310', 'Caution', '410', '0', '520', '900 at 78%', '120', '10/24', '10/29', 'Resequence build, confirm ETA'],
+];
+
+const tone: Record<string, string> = { Stable: 'good', Caution: 'warn', Urgent: 'crit' };
+---
+
+{/* tabindex so a keyboard user can scroll the overflow region. */}
+<div class="table-scroll" tabindex="0" role="region" aria-label="Operating view table, scrolls horizontally">
+  <table class="op-table">
+    <thead>
+      <tr>{columns.map((c) => <th class="t-label" scope="col">{c}</th>)}</tr>
+    </thead>
+    <tbody>
+      {
+        rows.map((row) => (
+          <tr>
+            {row.map((cell, i) => (
+              <td class="t-data">
+                {i === 1 ? (
+                  <span class={`status status-${tone[cell]}`}>
+                    <span class="dot" aria-hidden="true"></span>
+                    {cell}
+                  </span>
+                ) : (
+                  cell
+                )}
+              </td>
+            ))}
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>
+
+<style>
+  .table-scroll { overflow-x: auto; }
+
+  .op-table {
+    min-width: 860px;
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  .op-table th,
+  .op-table td {
+    padding: var(--s-3);
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  .op-table th { color: var(--faint); }
+  .op-table td { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+  /* Status carries a word and a dot, never color alone. */
+  .status { display: inline-flex; align-items: center; gap: var(--s-2); }
+  .status .dot { width: 6px; height: 6px; background: currentColor; }
+  .status-good { color: var(--good); }
+  .status-warn { color: var(--warn); }
+  .status-crit { color: var(--crit); }
+  .status { color: var(--ink); }
+  .status-good .dot { background: var(--good); }
+  .status-warn .dot { background: var(--warn); }
+  .status-crit .dot { background: var(--crit); }
+</style>

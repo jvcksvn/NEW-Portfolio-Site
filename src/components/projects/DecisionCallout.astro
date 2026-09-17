@@ -1,0 +1,35 @@
+---
+/*
+  02-design-system.md section 6, "Decision callout".
+  Card with a 3px left border in the case tint, a bold title, and a small
+  monospaced kind tag reading Trade off, Boundary, or Method.
+*/
+interface Props {
+  kind: 'Trade off' | 'Boundary' | 'Method';
+  title: string;
+  body: string;
+}
+const { kind, title, body } = Astro.props;
+---
+
+<div class="decision">
+  <span class="kind t-label">{kind}</span>
+  <h3 class="t-h3">{title}</h3>
+  <p class="t-small">{body}</p>
+</div>
+
+<style>
+  .decision {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
+    padding: var(--s-4);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--cs-tint, var(--ink));
+    background: var(--surface);
+  }
+
+  .kind { color: var(--faint); }
+  .decision h3 { color: var(--ink); }
+  .decision p { color: var(--muted); }
+</style>

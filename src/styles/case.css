@@ -1,0 +1,124 @@
+/*
+  Case study page styles shared by the three pages. Component styles live with
+  their components; this carries the prose and list treatments the source
+  documents imply.
+*/
+
+.case-p {
+  font-size: var(--t-body);
+  line-height: 1.7;
+  color: var(--muted);
+  max-width: 68ch;
+}
+
+.case-callout {
+  padding: var(--s-4);
+  border-left: 2px solid var(--cs-tint, var(--ink));
+  background: var(--surface-2);
+  color: var(--ink);
+  max-width: 68ch;
+}
+
+.case-terms {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  counter-reset: term;
+  max-width: 68ch;
+}
+
+.case-terms li {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding-left: var(--s-6);
+  position: relative;
+  counter-increment: term;
+}
+
+.case-terms li::before {
+  content: counter(term, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  top: 0.1em;
+  font-family: var(--font-mono);
+  font-size: var(--t-label);
+  color: var(--cs-tint, var(--faint));
+}
+
+.case-terms strong {
+  font-size: var(--t-body);
+  color: var(--ink);
+}
+
+.case-terms span {
+  font-size: var(--t-small);
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.case-subhead {
+  margin-top: var(--s-4);
+  color: var(--faint);
+}
+
+.case-decisions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+.case-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-4);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.case-block > h3 { color: var(--faint); }
+
+.case-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.case-list li {
+  position: relative;
+  padding-left: var(--s-4);
+  color: var(--ink);
+}
+
+.case-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.65em;
+  width: 6px;
+  height: 1px;
+  background: var(--cs-tint, var(--border-strong));
+}
+
+.case-block .provenance { color: var(--faint); }
+
+.case-lesson {
+  max-width: 68ch;
+  color: var(--ink);
+}
+
+.case-note {
+  max-width: 68ch;
+  padding: var(--s-4);
+  border-left: 2px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+@media (min-width: 900px) {
+  .case-decisions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

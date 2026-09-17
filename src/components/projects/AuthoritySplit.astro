@@ -1,0 +1,93 @@
+---
+/*
+  02-design-system.md section 6, "Authority split".
+
+  Two cards side by side. "I owned" carries a --good tinted border and a check
+  icon; "I did not own" carries a --crit tinted border and a cross. Both carry
+  text labels; the icons are decorative and aria-hidden, so nothing here is
+  carried by color or by an icon alone.
+*/
+interface Props {
+  owned: readonly string[];
+  notOwned: readonly string[];
+}
+const { owned, notOwned } = Astro.props;
+---
+
+<div class="authority">
+  <section class="card owned">
+    <h3 class="t-label">
+      <span class="mark" aria-hidden="true">✓</span>
+      I owned
+    </h3>
+    <ul>{owned.map((item) => <li class="t-small">{item}</li>)}</ul>
+  </section>
+
+  <section class="card not-owned">
+    <h3 class="t-label">
+      <span class="mark" aria-hidden="true">✕</span>
+      I did not own
+    </h3>
+    <ul>{notOwned.map((item) => <li class="t-small">{item}</li>)}</ul>
+  </section>
+</div>
+
+<style>
+  .authority {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--s-4);
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
+    padding: var(--s-4);
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .owned { border-left: 2px solid var(--good); }
+  .not-owned { border-left: 2px solid var(--crit); }
+
+  .card h3 {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+    color: var(--ink);
+  }
+
+  /* The left border carries the status colour and the heading says the words.
+     --good at 11px measures 4.33:1, under AA, so the glyph itself is ink. */
+  .owned .mark,
+  .not-owned .mark { color: var(--ink); }
+
+  .card ul {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
+  }
+
+  .card li {
+    position: relative;
+    padding-left: var(--s-4);
+    color: var(--muted);
+  }
+
+  .card li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.6em;
+    width: 6px;
+    height: 1px;
+    background: var(--border-strong);
+  }
+
+  @media (min-width: 768px) {
+    .authority {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

@@ -1,0 +1,82 @@
+---
+/*
+  Fig 2.1 — Data flow. Seven fragmented feeds converge into a left to right
+  pipeline (SAP, Redshift, Excel and VBA, Tableau) and out to a green part
+  level readiness terminal, replacing the generic box-row. Tint and neutrals
+  from tokens; the readiness terminal uses the status green. Content matches
+  the case document.
+
+  Decorative: the parent <Figure> carries the aria-label; this SVG is hidden.
+*/
+---
+
+<div class="pipe">
+  <svg viewBox="0 0 980 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+    <defs>
+      <marker id="pipe-arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+        <path d="M0 0 L7 4 L0 8 z" class="arrow-head" />
+      </marker>
+    </defs>
+
+    <!-- tributary labels -->
+    <g class="feed">
+      <text x="12" y="34">MRP</text>
+      <text x="12" y="58">Supplier commits</text>
+      <text x="12" y="82">Carrier ETAs</text>
+      <text x="12" y="106">Crossdock</text>
+      <text x="12" y="130">Tier 2 raw material</text>
+      <text x="12" y="154">Physical counts</text>
+      <text x="12" y="178">Production demand</text>
+    </g>
+
+    <!-- tributaries into the core -->
+    <g class="trib">
+      <path d="M132 30 C 170 30, 175 150, 205 150" />
+      <path d="M132 54 C 172 54, 178 150, 205 150" />
+      <path d="M132 78 C 174 78, 180 150, 205 150" />
+      <path d="M132 102 H205" />
+      <path d="M132 126 C 174 126, 180 150, 205 150" />
+      <path d="M132 150 C 174 174, 180 150, 205 150" />
+      <path d="M132 174 C 174 174, 180 150, 205 150" />
+    </g>
+
+    <!-- pipeline -->
+    <g>
+      <rect class="box tintbox" x="205" y="120" width="132" height="60" rx="4" /><text class="t tint-t" x="271" y="146">SAP S/4HANA</text><text class="s tint-t" x="271" y="163">TRANSACTIONAL CORE</text>
+      <rect class="box" x="381" y="120" width="120" height="60" rx="4" /><text class="t" x="441" y="146">Redshift</text><text class="s" x="441" y="163">SQL JOINS</text>
+      <rect class="box" x="545" y="120" width="120" height="60" rx="4" /><text class="t" x="605" y="146">Excel and VBA</text><text class="s" x="605" y="163">ASSEMBLY LAYER</text>
+      <rect class="box" x="709" y="120" width="120" height="60" rx="4" /><text class="t" x="769" y="146">Tableau</text><text class="s" x="769" y="163">SHARED VIEW</text>
+      <rect class="box good" x="855" y="112" width="118" height="76" rx="4" /><text class="t good-t" x="914" y="140">Readiness</text><text class="s good-t" x="914" y="157">PART LEVEL</text>
+    </g>
+
+    <g class="conn">
+      <path d="M337 150 H379" marker-end="url(#pipe-arrow)" />
+      <path d="M501 150 H543" marker-end="url(#pipe-arrow)" />
+      <path d="M665 150 H707" marker-end="url(#pipe-arrow)" />
+      <path d="M829 150 H853" marker-end="url(#pipe-arrow)" />
+    </g>
+
+    <text class="foot" x="855" y="212">status · runout date · risk · owner · action</text>
+  </svg>
+</div>
+
+<style>
+  .pipe { min-width: 760px; }
+  svg { width: 100%; height: auto; display: block; }
+
+  .feed text { font-family: var(--font-mono); font-size: 10px; fill: var(--faint); }
+
+  .trib path { fill: none; stroke: var(--cs-tint, var(--ink)); stroke-width: 1; opacity: 0.4; }
+  .conn path { fill: none; stroke: var(--cs-tint, var(--ink)); stroke-width: 1.8; }
+  .arrow-head { fill: var(--cs-tint, var(--ink)); }
+
+  .box { fill: var(--surface); stroke: var(--border-strong); stroke-width: 1.3; }
+  .box.tintbox { fill: color-mix(in srgb, var(--cs-tint, var(--ink)) 12%, var(--surface)); stroke: var(--cs-tint, var(--ink)); stroke-width: 1.5; }
+  .box.good { fill: var(--good-soft, color-mix(in srgb, var(--good) 12%, var(--surface))); stroke: var(--good); stroke-width: 1.6; }
+
+  .t { font-family: var(--font-display); font-weight: 700; font-size: 12px; fill: var(--ink); text-anchor: middle; }
+  .s { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.04em; fill: var(--muted); text-anchor: middle; }
+  .tint-t { fill: var(--cs-tint, var(--ink)); }
+  .good-t { fill: var(--good); }
+  .foot { font-family: var(--font-mono); font-size: 10.5px; fill: var(--faint); }
+</style>

@@ -1,0 +1,42 @@
+---
+import '../styles/global.css';
+import SEO from '../components/SEO.astro';
+import SkipLink from '../components/SkipLink.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title: string;
+  /* Null where 04 leaves the description bracketed. See SEO.astro. */
+  description: string | null;
+  image?: string;
+  type?: 'website' | 'article';
+  noindex?: boolean;
+  article?: { headline: string; description: string; section: string } | null;
+}
+
+const { title, description, image, type, noindex, article } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <SEO title={title} description={description} image={image} type={type} noindex={noindex} article={article} />
+  </head>
+  <body>
+    <SkipLink />
+    <Nav />
+    <main id="content" tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>
+
+<style>
+  main {
+    /* The skip link targets this, so it takes focus without an outline of
+       its own. The focus ring belongs to the elements inside it. */
+    outline: none;
+  }
+</style>

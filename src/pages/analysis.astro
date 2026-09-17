@@ -1,0 +1,35 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import IndexPage from '../components/collections/IndexPage.astro';
+import PostCard from '../components/collections/PostCard.astro';
+import { ANALYSIS_INDEX, ANALYSIS_ORDER, byOrder } from '../data/copy/collections';
+import { thumbFor } from '../data/assets';
+import { titleFor } from '../lib/seo';
+import { ROUTES } from '../lib/routes';
+
+const entries = byOrder(
+  (await getCollection('analysis')).filter((e) => !e.data.draft),
+  ANALYSIS_ORDER,
+);
+---
+
+<BaseLayout title={titleFor(ROUTES.analysis.label)} description={ANALYSIS_INDEX.meta}>
+  <IndexPage
+    h1={ANALYSIS_INDEX.h1}
+    standfirst={ANALYSIS_INDEX.standfirst}
+  >
+    {
+      entries.map((entry) => (
+        <PostCard
+          href={`/analysis/${entry.data.slug}`}
+          title={entry.data.title}
+          date={entry.data.date}
+          readingTime={entry.data.readingTime}
+          excerpt={entry.data.excerpt}
+          image={thumbFor('analysis', entry.data.slug)}
+        />
+      ))
+    }
+  </IndexPage>
+</BaseLayout>

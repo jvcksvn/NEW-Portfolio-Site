@@ -1,0 +1,137 @@
+---
+/*
+  One SEO component for the whole site. 01-build-spec.md section 7.
+  Emits the title, meta description, canonical, and Open Graph tags.
+*/
+import { LINKS } from '../lib/routes';
+import { OG_DESCRIPTION, SITE_NAME, SITE_URL, isUnresolved } from '../lib/seo';
+
+interface Props {
+  title: string;
+  /* An article's structured data, passed by the entry templates. */
+  article?: { headline: string; description: string; section: string } | null;
+  /* Every route now has a written description. Null is still accepted so a
+     future unwritten one omits the tag rather than shipping a placeholder. */
+  description: string | null;
+  image?: string;
+  type?: 'website' | 'article';
+  /** Search engines should not index the system pages. */
+  noindex?: boolean;
+}
+
+const { title, description, image = '/og-default.png', type = 'website', noindex = false, article = null } = Astro.props;
+
+/* build.format is 'file', so pathname arrives as /index.html or /404.html.
+   Strip the filename and any trailing slash so the canonical is the clean URL. */
+const cleanPath = Astro.url.pathname.replace(/\/index\.html$/, '/').replace(/\.html$/, '');
+const canonical = new URL(cleanPath, SITE_URL).href.replace(/(?<!:\/)\/$/, '');
+const ogImage = new URL(image, SITE_URL).href;
+
+/* The OG description is the 25 word About version, applied by rule to every
+   route. Until it exists, the tag is omitted rather than shipping brackets. */
+const ogDescription = isUnresolved(OG_DESCRIPTION) ? null : OG_DESCRIPTION;
+
+/*
+  Structured data. 01 section 7: Person on the landing, BlogPosting on
+  individual pieces, BreadcrumbList on nested routes.
+
+  All three key off cleanPath, not Astro.url.pathname. With build.format 'file'
+  the raw pathname is /index.html, so an earlier `pathname === '/'` test never
+  matched and the landing shipped no Person block at all. Caught by the stage 8
+  audit.
+*/
+const segments = cleanPath.split('/').filter(Boolean);
+
+const LABELS: Record<string, string> = {
+  projects: 'Projects',
+  writing: 'Writing',
+  analysis: 'Analysis',
+  library: 'Library',
+};
+
+/* BreadcrumbList on nested routes: home, the section index, this page. */
+const breadcrumbSchema =
+  segments.length > 1
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: LABELS[segments[0]] ?? segments[0],
+            item: `${SITE_URL}/${segments[0]}`,
+          },
+          { '@type': 'ListItem', position: 3, name: article?.headline ?? title, item: canonical },
+        ],
+      }
+    : null;
+
+const articleSchema = article
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      headline: article.headline,
+      description: article.description,
+      url: canonical,
+      articleSection: article.section,
+      author: { '@type': 'Person', name: SITE_NAME, url: SITE_URL },
+      publisher: { '@type': 'Person', name: SITE_NAME, url: SITE_URL },
+      mainEntityOfPage: { '@type': 'WebPage', '@id': canonical },
+    }
+  : null;
+
+/* JSON-LD Person, landing page only. jobTitle and worksFor are omitted
+   deliberately: schema treats them as current and the tenure has ended. */
+const personSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: SITE_NAME,
+  description: description ?? undefined,
+  url: SITE_URL,
+  alumniOf: {
+    '@type': 'CollegeOrUniversity',
+    name: 'Arizona State University',
+  },
+  sameAs: [LINKS.linkedin],
+};
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{title}</title>
+{description && <meta name="description" content={description} />}
+<link rel="canonical" href={canonical} />
+{noindex && <meta name="robots" content="noindex, follow" />}
+
+<meta property="og:type" content={type} />
+<meta property="og:title" content={title} />
+{ogDescription && <meta property="og:description" content={ogDescription} />}
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={ogImage} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:site_name" content={SITE_NAME} />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+{ogDescription && <meta name="twitter:description" content={ogDescription} />}
+<meta name="twitter:image" content={ogImage} />
+
+<link rel="icon" href="/favicon.ico" sizes="32x32" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="manifest" href="/site.webmanifest" />
+
+{/*
+  Fonts are self hosted from /fonts. The two faces above the fold are preloaded:
+  Archivo carries the name lockup, Plex Mono the role line under it. Plex Sans
+  and the second mono weight are below the fold and load from the stylesheet.
+*/}
+<link rel="preload" href="/fonts/archivo-variable.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="/fonts/plex-mono-400.woff2" as="font" type="font/woff2" crossorigin />
+
+{cleanPath === '/' && <script type="application/ld+json" is:inline set:html={JSON.stringify(personSchema)} />}
+{articleSchema && <script type="application/ld+json" is:inline set:html={JSON.stringify(articleSchema)} />}
+{breadcrumbSchema && <script type="application/ld+json" is:inline set:html={JSON.stringify(breadcrumbSchema)} />}

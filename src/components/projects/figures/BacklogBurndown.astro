@@ -1,0 +1,83 @@
+---
+/*
+  Fig 3.1 — Backlog burndown. Roughly 100 open kits falling to zero over about
+  four months, with the two structural events marked: the gate control (leak
+  stopped, in status green) and supplier side kitting (recurrence removed, in
+  the case tint). Replaces the box-row timeline.
+
+  Honesty note: the source records the endpoints and the two events, not the
+  values between them, so the curve shape is illustrative. The parent <Figure>
+  carries that provenance line and the aria-label; this SVG is hidden.
+*/
+---
+
+<div class="burn">
+  <svg viewBox="0 0 900 320" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+    <!-- axes -->
+    <line class="axis" x1="70" y1="30" x2="70" y2="250" />
+    <line class="axis" x1="70" y1="250" x2="850" y2="250" />
+
+    <!-- y ticks -->
+    <g class="tick">
+      <text x="60" y="46" text-anchor="end">100</text>
+      <text x="60" y="144" text-anchor="end">50</text>
+      <text x="60" y="254" text-anchor="end">0</text>
+    </g>
+    <g class="grid">
+      <line x1="70" y1="42" x2="850" y2="42" />
+      <line x1="70" y1="140" x2="850" y2="140" />
+    </g>
+
+    <!-- x labels -->
+    <g class="tick">
+      <text x="70" y="272">Month 0</text>
+      <text x="265" y="272" text-anchor="middle">Month 1</text>
+      <text x="460" y="272" text-anchor="middle">Month 2</text>
+      <text x="655" y="272" text-anchor="middle">Month 3</text>
+      <text x="850" y="272" text-anchor="end">~Month 4</text>
+    </g>
+
+    <!-- area + line -->
+    <path class="area" d="M70 44 C 180 60, 210 120, 320 150 C 430 180, 520 205, 650 228 C 730 242, 800 250, 850 250 L850 250 L70 250 Z" />
+    <path class="line" d="M70 44 C 180 60, 210 120, 320 150 C 430 180, 520 205, 650 228 C 730 242, 800 250, 850 250" />
+
+    <!-- events -->
+    <line class="ev-good" x1="200" y1="30" x2="200" y2="250" />
+    <circle class="dot-good" cx="200" cy="108" r="4.5" />
+    <line class="ev-tint" x1="600" y1="30" x2="600" y2="250" />
+    <circle class="dot-tint" cx="600" cy="220" r="4.5" />
+
+    <!-- endpoints -->
+    <circle class="dot-tint" cx="70" cy="44" r="5" />
+    <text class="lab tint-t" x="80" y="34">~100 open</text>
+    <circle class="dot-good" cx="850" cy="250" r="5" />
+
+    <!-- event labels -->
+    <text class="lab good-t" x="200" y="300" text-anchor="middle">Gate control live</text>
+    <text class="sub" x="200" y="314" text-anchor="middle">leak stopped</text>
+    <text class="lab tint-t" x="600" y="300" text-anchor="middle">Supplier kitting live</text>
+    <text class="sub" x="600" y="314" text-anchor="middle">recurrence removed</text>
+  </svg>
+</div>
+
+<style>
+  .burn { min-width: 680px; }
+  svg { width: 100%; height: auto; display: block; }
+
+  .axis { stroke: var(--border); stroke-width: 1; }
+  .grid line { stroke: var(--border); stroke-width: 1; opacity: 0.5; }
+  .tick text { font-family: var(--font-mono); font-size: 11px; fill: var(--faint); }
+
+  .area { fill: var(--cs-tint, var(--ink)); opacity: 0.1; }
+  .line { fill: none; stroke: var(--cs-tint, var(--ink)); stroke-width: 2.4; stroke-linecap: round; }
+
+  .ev-good { stroke: var(--good); stroke-width: 1.3; stroke-dasharray: 4 4; opacity: 0.8; }
+  .ev-tint { stroke: var(--cs-tint, var(--ink)); stroke-width: 1.3; stroke-dasharray: 4 4; opacity: 0.8; }
+  .dot-good { fill: var(--good); }
+  .dot-tint { fill: var(--cs-tint, var(--ink)); }
+
+  .lab { font-family: var(--font-mono); font-size: 11px; font-weight: 600; }
+  .sub { font-family: var(--font-mono); font-size: 9.5px; fill: var(--faint); }
+  .tint-t { fill: var(--cs-tint, var(--ink)); }
+  .good-t { fill: var(--good); }
+</style>

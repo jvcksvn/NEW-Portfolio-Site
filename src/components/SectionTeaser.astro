@@ -1,0 +1,97 @@
+---
+/*
+  02-design-system.md section 6, "Section header".
+
+  Display at --t-h2, matching a nav label verbatim. No eyebrow above it: an
+  eyebrow over a header whose text is already the nav label is a label labeling
+  a label. A teaser blurb sits beneath at --t-lede in --muted, capped at the
+  reading measure. The section link sits at the bottom right of the block at
+  --t-label with a right arrow that nudges 4px on hover.
+*/
+import Icon from './Icon.astro';
+
+interface Props {
+  header: string;
+  /* Optional: the merged Writing section carries a blurb and a link per state,
+     beneath the toggle, rather than on the header. */
+  blurb?: string;
+  link?: { label: string; href: string };
+  /** The closing block carries a second line beneath its blurb. */
+  extraLine?: string;
+}
+
+const { header, blurb, link, extraLine } = Astro.props;
+---
+
+<section class="teaser">
+  <div class="body">
+    <h2 class="t-h2">{header}</h2>
+    {blurb && <p class="t-lede blurb reading">{blurb}</p>}
+    {extraLine && <p class="t-lede blurb reading">{extraLine}</p>}
+  </div>
+
+  {
+    link && (
+      <a class="t-label link" href={link.href}>
+        <span>{link.label}</span>
+        <Icon name="arrow-right" size={13} />
+      </a>
+    )
+  }
+</section>
+
+<style>
+  /*
+    No border and no block padding of its own. The .block that holds this
+    teaser already draws the section rule and owns the rhythm; carrying both
+    here put two rules and two stacked paddings between every pair of sections,
+    which is what read as a blank line plus extra space.
+  */
+  .teaser {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-5);
+  }
+
+  .body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+  }
+
+  .blurb {
+    color: var(--muted);
+  }
+
+  .link {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    gap: var(--s-2);
+    min-height: 44px;
+    color: var(--ink);
+    transition: color var(--dur-fast) var(--ease);
+  }
+
+  .link :global(svg) {
+    transition: transform var(--dur-fast) var(--ease);
+  }
+
+  .link:hover :global(svg) {
+    transform: translateX(4px);
+  }
+
+  @media (min-width: 768px) {
+    .teaser {
+      flex-direction: row;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: var(--s-8);
+    }
+
+    .link {
+      align-self: flex-end;
+      flex-shrink: 0;
+    }
+  }
+</style>

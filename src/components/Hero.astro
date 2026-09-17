@@ -1,0 +1,226 @@
+---
+/*
+  02-design-system.md section 6, strings from 03-site-copy-landing.md section 2.
+
+  Two column asymmetric split, roughly 55 / 45, running from under the nav to
+  about 85vh. Left column aligned to the outer margin, holding the name lockup,
+  the monospaced role line, a 48px by 2px coral rule, and a down arrow cue.
+
+  Right column deviation, reported: 02 specifies the image full bleed to the
+  right viewport edge. The supplied asset is a square illustration on a near
+  white ground, not a photograph, so a cover crop to a 45vw by 85vh slot would
+  cut off the robot arm and the processor. It is contained on the page ground
+  instead, whole and uncropped, by decision. Its baked ground was keyed to
+  transparent at asset build time so it sits directly on --bg.
+
+  The image carries an orange flame and blue circuit traces, so it is
+  desaturated in CSS rather than by editing the file.
+*/
+import NameLockup from './NameLockup.astro';
+import ActionRow from './ActionRow.astro';
+import { HERO } from '../data/copy/landing';
+---
+
+<section class="hero shell" aria-labelledby="hero-role">
+  <div class="col-text">
+    <NameLockup />
+    <p class="t-label role" id="hero-role">{HERO.roleLine}</p>
+    <div class="rule" aria-hidden="true"></div>
+    {/* 03 section 3: the action row sits directly under the rule, above the
+        fold. The old scroll cue is gone; Explore in the row does that job. */}
+    <div class="actions-wrap">
+      <ActionRow />
+    </div>
+  </div>
+
+  <div class="col-image">
+    <picture>
+      <source
+        type="image/avif"
+        srcset="/images/hero-480.avif 480w, /images/hero-768.avif 768w, /images/hero-1254.avif 1254w"
+        sizes="(min-width: 768px) 45vw, 100vw"
+      />
+      <img
+        src="/images/hero-1254.webp"
+        srcset="/images/hero-480.webp 480w, /images/hero-768.webp 768w, /images/hero-1254.webp 1254w"
+        sizes="(min-width: 768px) 45vw, 100vw"
+        width="1254"
+        height="1254"
+        alt={HERO.imageAlt}
+        decoding="async"
+      />
+    </picture>
+  </div>
+</section>
+
+<style>
+  .hero {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--s-6);
+    padding-top: var(--s-7);
+    padding-bottom: var(--s-8);
+    align-items: center;
+  }
+
+  /* 02 section 6: under --bp-m the name stacks above the image. */
+  .col-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    order: 0;
+  }
+
+  .role {
+    margin-top: var(--s-5);
+    color: var(--muted);
+  }
+
+  /* 48px by 2px coral rule. */
+  .rule {
+    width: 48px;
+    height: 2px;
+    background: var(--coral);
+    margin-top: var(--s-5);
+  }
+
+  .actions-wrap {
+    margin-top: var(--s-6);
+  }
+
+  .col-image {
+    order: 1;
+  }
+
+  .col-image img {
+    width: 100%;
+    height: auto;
+    /* The asset carries an orange flame and blue traces. Desaturated here
+       rather than by editing the source file. */
+    filter: grayscale(1);
+  }
+
+  @media (min-width: 768px) {
+    .hero {
+      grid-template-columns: 55fr 45fr;
+      gap: var(--s-5);
+      /*
+        The hero no longer reserves most of the viewport. The top of the
+        Interactive Resume section has to clear the fold at a normal desktop
+        height, and that requirement outranks the general section rhythm.
+      */
+      min-height: 0;
+      padding-top: 0;
+      padding-bottom: var(--s-5);
+    }
+
+    /* 02 section 6 asks for the image to run to the right viewport edge. The
+       illustration is contained rather than cropped, per the hero decision
+       above, so instead of a bleed the hero drops its own right padding and the
+       image column runs to the edge of the content shell. No vw based negative
+       margin: those resolve against the grid area rather than the viewport and
+       overflow the page. */
+    .hero {
+      padding-right: 0;
+    }
+
+    /*
+      02 section 6: the image raises so its top edge sits level with the cap
+      height of JACKSON rather than hanging below it.
+
+      The lockup starts at the top of the text column, and Archivo's cap height
+      sits about 0.14em below the line box top at 0.84 leading. Aligning to the
+      top and nudging by that much puts the image's top edge on the cap line.
+    */
+    /*
+      Both columns anchor to the top of the row, not the middle, so the image's
+      offset is measured from a fixed point rather than from a centre that moves
+      with content height.
+
+      Archivo's cap top sits 0.165em below the line box top at 0.84 leading:
+      half leading is (0.84 - 1) / 2 = -0.08em, and the ascender to cap gap is
+      0.245em. Padding the image by that puts its top edge on the cap line.
+    */
+    .hero { align-items: start; }
+
+    .col-text { align-self: start; }
+
+    /*
+      The image runs at 1.5 times the size it had, which its own column cannot
+      hold: the text column is exactly as wide as the name lockup, so the extra
+      width has to come from the page rather than from the row.
+
+      It takes it in two directions. To the right it bleeds past the shell to
+      the viewport edge, which is what 02 section 6 asked for in the first
+      place. The rest it takes leftwards, over the text column. That is safe
+      here and only here: the illustration's left eighth is empty and its left
+      third is nearly so, all of its weight sits right of centre, and the text
+      column is stacked above it so the name is never painted over.
+    */
+    .col-image {
+      order: 1;
+      align-self: start;
+      display: flex;
+      justify-content: flex-end;
+      /*
+        Higher again. It cleared the cap line last pass; it now rises above the
+        hero's own content box and sits against the nav, which is the top of
+        the page area it can reach.
+      */
+      padding-top: 0;
+      margin-top: calc(var(--s-6) * -1);
+      z-index: 0;
+    }
+
+    .col-text {
+      position: relative;
+      z-index: 1;
+    }
+
+    /*
+      1.5 times the column, measured against the column rather than against
+      anything already bled, so the multiple stays exactly 1.5 at every width.
+      max-width has to be released explicitly: the global reset caps every
+      image and picture at 100 percent, which silently held this at 1.15.
+    */
+    .col-image picture {
+      display: block;
+      flex: 0 0 auto;
+      width: 150%;
+      max-width: none;
+      /*
+        Bleed to the viewport's right edge. 02 section 6.
+
+        The hero already sets padding-right: 0, so the column reaches the
+        shell's border box. The only room left is whatever the shell's own
+        max-width leaves beside it, which is nothing until the viewport is
+        wider than that cap. Subtracting the outer margin flat overflowed the
+        page by exactly that margin at 1024 and 1280, where the shell fills the
+        viewport and there is no room to bleed into.
+      */
+      margin-right: calc(
+        max(0px, (100vw - (var(--content-max) + var(--outer-margin) * 2)) / 2) * -1
+      );
+      /*
+        The top 12 percent of the source is empty: measured, the first two
+        twentieths carry 0 percent ink and the subject's weight sits in the
+        bottom third. Trimming that band is what lets the image run at 1.5
+        times and still leave the Interactive Resume section's top above the
+        fold. The subject is untouched, so the stage 1 decision to contain the
+        illustration rather than crop it still holds.
+
+        An explicit ratio also reserves the box before the bytes arrive.
+      */
+      aspect-ratio: 1 / 0.88;
+      overflow: hidden;
+    }
+
+    .col-image img {
+      width: 100%;
+      max-width: none;
+      height: 100%;
+      object-fit: cover;
+      object-position: center bottom;
+    }
+  }
+</style>

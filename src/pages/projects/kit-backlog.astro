@@ -1,0 +1,72 @@
+---
+/*
+  Case 03. Two bespoke figures: the backlog burndown (Fig 3.1) and the root
+  cause redesign (Fig 3.2).
+
+  Fig 3.1 draws a curve. The source records the endpoints and the two
+  structural events, not the values between them, so the curve shape is
+  illustrative and its caption says so. The two events and the endpoints are
+  the recorded, load bearing part.
+
+  The authority split is omitted: this document states responsibilities in prose
+  and carries no "I owned" and "I did not own" lists. Reported.
+*/
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CaseShell from '../../components/projects/CaseShell.astro';
+import SectionRail from '../../components/projects/SectionRail.astro';
+import Figure from '../../components/projects/Figure.astro';
+import BacklogBurndown from '../../components/projects/figures/BacklogBurndown.astro';
+import RootCauseRedesign from '../../components/projects/figures/RootCauseRedesign.astro';
+import { CASE_03 as c } from '../../data/cases/kit-backlog';
+import '../../styles/case.css';
+---
+
+<BaseLayout title={`${c.title} | Jackson Barker`} description={c.meta}>
+  <CaseShell case={c}>
+    <SectionRail number={c.context.number} label={c.context.label} title={c.context.title}>
+      {c.context.body.map((p) => <p class="case-p">{p}</p>)}
+    </SectionRail>
+
+    <SectionRail number={c.constraints.number} label={c.constraints.label} title={c.constraints.title}>
+      <ol class="case-terms">
+        {c.constraints.items.map((i) => <li><strong>{i.term}</strong><span>{i.body}</span></li>)}
+      </ol>
+    </SectionRail>
+
+    <SectionRail number={c.authority.number} label={c.authority.label} title={c.authority.title}>
+      {c.authority.body.map((p) => <p class="case-p">{p}</p>)}
+    </SectionRail>
+
+    <SectionRail number={c.approach.number} label={c.approach.label} title={c.approach.title}>
+      <ol class="case-terms">
+        {c.approach.items.map((i) => <li><strong>{i.term}</strong><span>{i.body}</span></li>)}
+      </ol>
+
+      <Figure
+        number="Fig. 3.1"
+        finding="Two structural events carried the backlog down: the gate stopped the leak, and supplier side kitting removed the recurrence."
+        label="Backlog burndown from roughly 100 open kits to zero over about four months, with the gate control and supplier kitting events marked"
+        provenance="The source records the endpoints and the two events; the curve shape between them is illustrative."
+      >
+        <BacklogBurndown />
+      </Figure>
+
+      <Figure
+        number="Fig. 3.2"
+        finding="Kitting moved to the packaging supplier; a factory gate on the front end keeps the leak closed."
+        label="Root cause redesign, before and after: eight components across four suppliers routed through an internal task force, versus consolidated at the packaging supplier with a factory gate"
+      >
+        <RootCauseRedesign />
+      </Figure>
+    </SectionRail>
+
+    <SectionRail number={c.result.number} label={c.result.label} title={c.result.title}>
+      {c.result.body.map((p) => <p class="case-p">{p}</p>)}
+      <div class="case-block">
+        <ul class="case-list">{c.result.items.map((i) => <li class="t-data">{i}</li>)}</ul>
+      </div>
+    </SectionRail>
+
+    <p slot="lesson" class="case-lesson t-lede">{c.lesson}</p>
+  </CaseShell>
+</BaseLayout>

@@ -1,0 +1,59 @@
+---
+/*
+  02-design-system.md section 6, "Figure and caption".
+
+  Bordered card holding the diagram, with a caption bar beneath carrying a
+  monospaced figure number and a plain language finding. Every figure carries an
+  aria-label describing what it shows. Figures inherit theme tokens; none carries
+  a hardcoded color.
+*/
+interface Props {
+  number: string;
+  finding: string;
+  label: string;
+  /** The source document's parenthetical description of the diagram. */
+  provenance?: string;
+}
+const { number, finding, label, provenance } = Astro.props;
+---
+
+{/* No role override: a figure already exposes one, and role="group"
+     on it is flagged as an inappropriate combination. */}
+<figure class="figure" aria-label={label}>
+  <div class="figure-body">
+    <slot />
+  </div>
+  <figcaption class="figure-caption">
+    <span class="t-label">{number}</span>
+    <p class="t-small">{finding}</p>
+    {provenance && <p class="provenance t-data">{provenance}</p>}
+  </figcaption>
+</figure>
+
+<style>
+  .figure {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .figure-body {
+    padding: var(--s-5);
+    overflow-x: auto;
+  }
+
+  .figure-caption {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+    padding: var(--s-4);
+    border-top: 1px solid var(--border);
+    background: var(--surface-2);
+  }
+
+  /* Not the tint: at --t-label it fails AA. */
+  .figure-caption span { color: var(--muted); }
+  .figure-caption p { color: var(--muted); }
+  .provenance { color: var(--faint); }
+</style>

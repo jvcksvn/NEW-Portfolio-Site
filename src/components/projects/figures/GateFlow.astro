@@ -1,0 +1,54 @@
+---
+/*
+  Fig 1.2 — Technical gate. A five step validation flow ending in a green
+  "usable" terminal, replacing the generic box-row for this figure. The tint
+  and neutrals read from theme tokens; the terminal uses the status green so
+  "cleared" reads at a glance. Content matches the case document.
+
+  Decorative: the parent <Figure> carries the aria-label; this SVG is hidden.
+*/
+---
+
+<div class="gate">
+  <svg viewBox="0 0 980 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+    <defs>
+      <marker id="gate-arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+        <path d="M0 0 L7 4 L0 8 z" class="arrow-head" />
+      </marker>
+    </defs>
+
+    <g class="conn">
+      <path d="M172 95 H208" marker-end="url(#gate-arrow)" />
+      <path d="M382 95 H418" marker-end="url(#gate-arrow)" />
+      <path d="M592 95 H628" marker-end="url(#gate-arrow)" />
+      <path d="M802 95 H838" marker-end="url(#gate-arrow)" />
+    </g>
+
+    <g>
+      <rect class="box alt" x="16" y="66" width="156" height="58" rx="4" /><text class="t" x="94" y="92">Material</text><text class="s" x="94" y="109">available</text>
+      <rect class="box" x="226" y="66" width="156" height="58" rx="4" /><text class="t" x="304" y="92">Engineering</text><text class="s" x="304" y="109">review</text>
+      <rect class="box" x="436" y="66" width="156" height="58" rx="4" /><text class="t" x="514" y="92">Crash / forming</text><text class="s" x="514" y="109">validation · 3 to 4 wk</text>
+      <rect class="box" x="646" y="66" width="156" height="58" rx="4" /><text class="t" x="724" y="92">Quality</text><text class="s" x="724" y="109">approval</text>
+      <rect class="box good" x="856" y="60" width="118" height="70" rx="4" /><text class="t good-t" x="915" y="90">Usable</text><text class="s good-t" x="915" y="107">CTB coverage</text>
+    </g>
+
+    <text class="note" x="16" y="166">availability is not usable coverage. Planning made the timing visible; Engineering and Quality released</text>
+  </svg>
+</div>
+
+<style>
+  .gate { min-width: 720px; }
+  svg { width: 100%; height: auto; display: block; }
+
+  .conn path { fill: none; stroke: var(--border-strong); stroke-width: 1.4; }
+  .arrow-head { fill: var(--border-strong); }
+
+  .box { fill: var(--surface); stroke: var(--border); stroke-width: 1.2; }
+  .box.alt { fill: var(--surface-2); }
+  .box.good { fill: var(--good-soft, color-mix(in srgb, var(--good) 12%, var(--surface))); stroke: var(--good); stroke-width: 1.6; }
+
+  .t { font-family: var(--font-display); font-weight: 700; font-size: 12px; fill: var(--ink); text-anchor: middle; }
+  .s { font-family: var(--font-mono); font-size: 10px; fill: var(--muted); text-anchor: middle; }
+  .good-t { fill: var(--good); }
+  .note { font-family: var(--font-mono); font-size: 11px; fill: var(--faint); }
+</style>

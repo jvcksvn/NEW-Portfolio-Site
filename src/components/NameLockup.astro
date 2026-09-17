@@ -1,0 +1,31 @@
+---
+/*
+  The hero's whole device. JACKSON over BARKER, same computed size, flush on
+  both edges. The width and tracking values live in global.css on .t-hero and
+  .t-hero-alt, where the measurement that produced them is recorded.
+
+  One h1 per page. The two words are spans inside it so the accessible name is
+  "Jackson Barker" rather than two separate headings.
+*/
+import { HERO } from '../data/copy/landing';
+---
+
+<h1 class="lockup">
+  <span class="t-hero">{HERO.nameFirst}</span>
+  <span class="t-hero-alt">{HERO.nameLast}</span>
+</h1>
+
+<style>
+  .lockup {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    /* The two words stack as one block. No gap; leading does the work. */
+    text-wrap: nowrap;
+  }
+
+  .lockup span {
+    display: block;
+    white-space: nowrap;
+  }
+</style>

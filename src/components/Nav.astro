@@ -1,0 +1,276 @@
+---
+/*
+  02-design-system.md section 6.
+
+  Sticky, 60px. Left: an 8px cobalt dot as the brand marker. Right: nav items
+  at --t-label with --s-6 gaps. Current route carries aria-current and a 1px
+  cobalt underline offset 6px. No CTA button in the bar, no wordmark, no logo.
+
+  Labels come from src/lib/routes.ts in sentence case and are uppercased here in
+  CSS, which is what keeps "section headers match nav labels character for
+  character" true of the source string rather than only of the rendering.
+
+  The mobile menu is a plain script rather than a React island. 01-build-spec.md
+  section 1 is explicit that only the interactive resume hydrates, and measured,
+  a React island for one toggle shipped 208 KB of runtime, more than the hero
+  image, to run about thirty lines of behavior.
+*/
+import { NAV_COPY } from '../data/copy/landing';
+import { NAV_ITEMS } from '../lib/routes';
+
+const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
+---
+
+<header class="nav">
+  <div class="nav-inner shell">
+    <a class="brand" href="/" aria-label={NAV_COPY.brandLabel}>
+      <span class="dot" aria-hidden="true"></span>
+    </a>
+
+    <nav class="desktop" aria-label="Primary">
+      <ul>
+        {
+          NAV_ITEMS.map((item) => (
+            <li>
+              <a
+                class="t-label"
+                href={item.path}
+                aria-current={currentPath === item.path ? 'page' : undefined}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="mobile">
+      <button
+        type="button"
+        class="trigger"
+        aria-label={NAV_COPY.openMenu}
+        aria-expanded="false"
+        aria-controls="mobile-nav-panel"
+        data-open-label={NAV_COPY.openMenu}
+        data-close-label={NAV_COPY.closeMenu}
+      >
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.25"
+          stroke-linecap="square"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <g class="bars"><line x1="1.5" y1="4.5" x2="14.5" y2="4.5" /><line x1="1.5" y1="11.5" x2="14.5" y2="11.5" /></g>
+          <g class="cross"><line x1="3" y1="3" x2="13" y2="13" /><line x1="13" y1="3" x2="3" y2="13" /></g>
+        </svg>
+      </button>
+
+      <div id="mobile-nav-panel" class="panel" hidden>
+        <ul>
+          {
+            NAV_ITEMS.map((item) => (
+              <li>
+                <a href={item.path} aria-current={currentPath === item.path ? 'page' : undefined}>
+                  {item.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </div>
+</header>
+
+<script>
+  const trigger = document.querySelector<HTMLButtonElement>('.mobile .trigger');
+  const panel = document.getElementById('mobile-nav-panel');
+
+  if (trigger && panel) {
+    const FOCUSABLE = 'a[href], button:not([disabled])';
+
+    const setOpen = (open: boolean) => {
+      panel.hidden = !open;
+      trigger.setAttribute('aria-expanded', String(open));
+      trigger.setAttribute(
+        'aria-label',
+        (open ? trigger.dataset.closeLabel : trigger.dataset.openLabel) ?? '',
+      );
+      document.body.style.overflow = open ? 'hidden' : '';
+    };
+
+    const close = () => {
+      setOpen(false);
+      trigger.focus();
+    };
+
+    trigger.addEventListener('click', () => {
+      const open = trigger.getAttribute('aria-expanded') === 'true';
+      setOpen(!open);
+      if (!open) panel.querySelector<HTMLElement>(FOCUSABLE)?.focus();
+    });
+
+    panel.addEventListener('click', (event) => {
+      if ((event.target as HTMLElement).closest('a')) setOpen(false);
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (panel.hidden) return;
+
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        close();
+        return;
+      }
+
+      if (event.key !== 'Tab') return;
+
+      const nodes = panel.querySelectorAll<HTMLElement>(FOCUSABLE);
+      if (nodes.length === 0) return;
+
+      const first = nodes[0];
+      const last = nodes[nodes.length - 1];
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    });
+  }
+</script>
+
+<style>
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    height: 60px;
+    /* Solid, no translucency and no backdrop blur. 02 section 6: glass is
+       banned by section 5 and section 5 wins. */
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+  }
+
+  /* Brand marker. An 8px cobalt dot in a 44px target. */
+  .brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin-left: -14px;
+  }
+
+  .dot {
+    display: block;
+    width: 8px;
+    height: 8px;
+    background: var(--blue);
+  }
+
+  .desktop {
+    display: none;
+  }
+
+  .desktop ul {
+    display: flex;
+    align-items: center;
+    gap: var(--s-6);
+  }
+
+  .desktop a {
+    display: flex;
+    align-items: center;
+    height: 44px;
+    color: var(--muted);
+    text-transform: uppercase;
+    transition: color var(--dur-fast) var(--ease);
+  }
+
+  .desktop a:hover {
+    color: var(--ink);
+  }
+
+  .desktop a[aria-current='page'] {
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: var(--blue);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 6px;
+  }
+
+  /* The hidden attribute is not honoured on SVG children, so the open and
+     closed icons are switched from the button's aria-expanded state. */
+  .trigger[aria-expanded='false'] .cross,
+  .trigger[aria-expanded='true'] .bars {
+    display: none;
+  }
+
+  .trigger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin-right: -13px;
+    color: var(--ink);
+    position: relative;
+    z-index: 60;
+  }
+
+  .panel {
+    position: fixed;
+    inset: 60px 0 0;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    padding: var(--s-6) var(--outer-margin);
+    overflow-y: auto;
+  }
+
+  .panel ul {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .panel a {
+    display: flex;
+    align-items: center;
+    min-height: 56px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+
+  .panel a[aria-current='page'] {
+    color: var(--blue);
+  }
+
+  @media (min-width: 768px) {
+    .desktop {
+      display: block;
+    }
+
+    .mobile {
+      display: none;
+    }
+  }
+</style>

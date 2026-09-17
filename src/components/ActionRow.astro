@@ -1,0 +1,80 @@
+---
+/*
+  02 section 6, "Action row". Strings from 03 section 3.
+
+  Three items directly under the hero rule, above the fold. Resume PDF is
+  primary, filled --ink. Contact Me is secondary, outlined. Explore is a quiet
+  text link with a down arrow that scrolls to the Interactive Resume section.
+
+  The two buttons take --r and --shadow-1 and lift to --shadow-2 on hover. They
+  are the only filled elements on the site besides the contact submit.
+*/
+import Icon from './Icon.astro';
+import { ACTION_ROW } from '../data/copy/landing';
+---
+
+<ul class="actions">
+  {
+    ACTION_ROW.map((action) => (
+      <li>
+        <a class={`action ${action.kind}`} href={action.href}>
+          <span>{action.label}</span>
+          {action.kind === 'scroll' && <Icon name="arrow-down" size={14} />}
+        </a>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-3);
+  }
+
+  .action {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    min-height: 44px;
+    padding: var(--s-3) var(--s-5);
+    border-radius: var(--r);
+    font-family: var(--font-body);
+    font-size: var(--t-body);
+    transition:
+      box-shadow var(--dur-fast) var(--ease),
+      border-color var(--dur-fast) var(--ease),
+      opacity var(--dur-fast) var(--ease);
+  }
+
+  .primary {
+    background: var(--ink);
+    color: var(--bg);
+    border: 1px solid var(--ink);
+    box-shadow: var(--shadow-1);
+  }
+
+  .primary:hover { box-shadow: var(--shadow-2); opacity: 0.92; }
+
+  .secondary {
+    background: var(--surface);
+    color: var(--ink);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-1);
+  }
+
+  .secondary:hover { box-shadow: var(--shadow-2); border-color: var(--border-strong); }
+
+  /* Quiet text link, no fill and no elevation. */
+  .scroll {
+    padding-inline: var(--s-2);
+    color: var(--muted);
+  }
+
+  .scroll:hover { color: var(--ink); }
+
+  .scroll :global(svg) { transition: transform var(--dur-fast) var(--ease); }
+  .scroll:hover :global(svg) { transform: translateY(3px); }
+</style>

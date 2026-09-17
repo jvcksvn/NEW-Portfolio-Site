@@ -1,0 +1,64 @@
+---
+/*
+  A horizontal bar chart from stated values only. Every bar's number is written
+  in the case document; the bar length is that number scaled against the largest.
+  No axis is invented and no value is interpolated.
+*/
+interface Props {
+  items: ReadonlyArray<{ label: string; value: number; note?: string }>;
+}
+const { items } = Astro.props;
+const max = Math.max(...items.map((i) => i.value));
+---
+
+<div class="bars">
+  {
+    items.map((item) => (
+      <div class="bar-row">
+        <span class="bar-label t-data">{item.label}</span>
+        <span class="bar-track">
+          <span class="bar-fill" style={`width:${(item.value / max) * 100}%`}></span>
+        </span>
+        <span class="bar-value t-data">{item.value}</span>
+        {item.note && <span class="bar-note t-data">{item.note}</span>}
+      </div>
+    ))
+  }
+</div>
+
+<style>
+  .bars {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
+  }
+
+  .bar-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--s-2) var(--s-3);
+  }
+
+  .bar-label { grid-column: 1 / -1; color: var(--muted); }
+  .bar-value { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .bar-note { grid-column: 1 / -1; color: var(--faint); }
+
+  .bar-track {
+    display: block;
+    height: 8px;
+    background: var(--chart-fill);
+  }
+
+  .bar-fill {
+    display: block;
+    height: 100%;
+    background: var(--cs-tint, var(--ink));
+  }
+
+  @media (min-width: 640px) {
+    .bar-row { grid-template-columns: 200px minmax(0, 1fr) auto; }
+    .bar-label { grid-column: auto; }
+    .bar-note { grid-column: 2 / -1; }
+  }
+</style>

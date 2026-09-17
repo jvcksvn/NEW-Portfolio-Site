@@ -1,0 +1,53 @@
+---
+/*
+  The About body, taking its copy as a prop.
+
+  Two bodies exist: the long one with headings for /about, and the short one
+  for the resume's About tab. One shared constant is what let the short version
+  reach both places, so the component now takes the body rather than importing
+  one.
+
+  Full width of the section either way, not the reading column. 09.
+*/
+import type { AboutBodyCopy } from '../../data/copy/about';
+
+interface Props {
+  body: AboutBodyCopy;
+}
+
+const { body } = Astro.props;
+---
+
+<div class="about-body">
+  {body.paragraphs?.map((paragraph) => <p class="t-body">{paragraph}</p>)}
+
+  {
+    body.sections?.map((section) => (
+      <section class="about-section">
+        <h2 class="t-h3">{section.heading}</h2>
+        {section.paragraphs.map((paragraph) => (
+          <p class="t-body">{paragraph}</p>
+        ))}
+      </section>
+    ))
+  }
+</div>
+
+<style>
+  .about-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+  }
+
+  .about-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+    margin-top: var(--s-4);
+  }
+
+  .about-body p { color: var(--muted); line-height: 1.7; }
+  .about-section h2 { color: var(--ink); }
+  .about-body > p:first-child { color: var(--ink); font-size: var(--t-lede); }
+</style>

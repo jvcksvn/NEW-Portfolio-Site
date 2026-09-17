@@ -1,0 +1,95 @@
+---
+/*
+  02 section 6, "Card grid" cell, for /writing and /analysis.
+
+  Version 2: the card gains its visual on top, --r and --shadow-1, and lifts on
+  hover. Tags are removed from the card entirely along with the filter row; the
+  frontmatter keeps the field and nothing renders it.
+
+  Fifteen pieces carry the bracketed date placeholder, so the date cell is
+  omitted rather than printed and the metadata line shows reading time alone.
+*/
+import Thumbnail from '../shared/Thumbnail.astro';
+import { UNDATED } from '../../content.config';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  href: string;
+  title: string;
+  date: string;
+  readingTime: number;
+  excerpt: string;
+  image: ImageMetadata | null;
+}
+
+const { href, title, date, readingTime, excerpt, image } = Astro.props;
+const dated = date !== UNDATED;
+---
+
+<article class="post-card card card-lift" data-card>
+  <a href={href}>
+    {
+      image && (
+        <span class="frame">
+          <Thumbnail
+            src={image}
+            alt={title}
+            width={320}
+            sizes="(min-width: 1024px) 260px, (min-width: 768px) 45vw, 90vw"
+          />
+        </span>
+      )
+    }
+
+    <span class="body">
+      <span class="meta t-data">
+        {dated && <><span>{date}</span><span aria-hidden="true">|</span></>}
+        <span>{readingTime} min read</span>
+      </span>
+      <h2 class="t-h3">{title}</h2>
+      <span class="excerpt t-small">{excerpt}</span>
+    </span>
+  </a>
+</article>
+
+<style>
+  .post-card { overflow: hidden; }
+
+  .post-card a {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    color: var(--ink);
+  }
+
+  .frame {
+    display: block;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-2);
+  }
+
+  .frame :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+  }
+
+  .body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+    padding: var(--s-4);
+    flex: 1;
+  }
+
+  .meta {
+    display: flex;
+    gap: var(--s-3);
+    color: var(--faint);
+  }
+
+  .post-card h2 { color: var(--ink); }
+  .excerpt { color: var(--muted); }
+</style>

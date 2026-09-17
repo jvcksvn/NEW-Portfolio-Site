@@ -1,0 +1,94 @@
+---
+/*
+  One entry template for all three collections.
+
+  Title, the monospaced metadata line, tags, body, and a return to the index.
+  The metadata line omits any bracketed value rather than printing it: fifteen
+  pieces carry the date placeholder and eighteen library entries carry the year
+  read placeholder.
+*/
+import Icon from '../Icon.astro';
+
+interface Props {
+  title: string;
+  /** Monospaced metadata cells, already filtered of anything bracketed. */
+  meta: string[];
+  backHref: string;
+  backLabel: string;
+}
+
+/* 04: tags are removed from the page, the card and the entry template. The
+   frontmatter keeps the field; nothing renders it. */
+const { title, meta, backHref, backLabel } = Astro.props;
+---
+
+<article class="shell entry">
+  <header class="entry-head">
+    <h1 class="t-h2">{title}</h1>
+
+    {
+      meta.length > 0 && (
+        <p class="entry-meta t-data">
+          {meta.map((cell, i) => (
+            <>
+              {i > 0 && <span aria-hidden="true">|</span>}
+              <span>{cell}</span>
+            </>
+          ))}
+        </p>
+      )
+    }
+
+  </header>
+
+  <div class="prose">
+    <slot />
+  </div>
+
+  <nav class="entry-foot" aria-label="Back to the index">
+    <a class="t-label" href={backHref}>
+      <Icon name="arrow-right" size={13} />
+      <span>{backLabel}</span>
+    </a>
+  </nav>
+</article>
+
+<style>
+  .entry {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-6);
+    padding-block: var(--s-8) var(--s-10);
+  }
+
+  .entry-head {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+    max-width: var(--reading-max);
+  }
+
+  .entry-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-3);
+    color: var(--faint);
+  }
+
+  .entry-foot {
+    padding-top: var(--s-6);
+    border-top: 1px solid var(--border);
+  }
+
+  .entry-foot a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    min-height: 44px;
+    color: var(--muted);
+    transition: color var(--dur-fast) var(--ease);
+  }
+
+  .entry-foot a:hover { color: var(--ink); }
+  .entry-foot :global(svg) { transform: rotate(180deg); }
+</style>

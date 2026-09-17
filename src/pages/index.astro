@@ -1,0 +1,190 @@
+---
+/*
+  The landing page. Nine blocks in the order 03-site-copy-landing.md gives them,
+  down from eleven: the positioning statement and subhead are cut and the action
+  row moves into the hero above the fold.
+
+  Writing and Analysis merge into one section behind a toggle. Library gains a
+  section. Both use the same carousel.
+
+  Every string is imported; none is typed into this file.
+*/
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import ResumeEmbedSlot from '../components/ResumeEmbedSlot.astro';
+import SectionTeaser from '../components/SectionTeaser.astro';
+import CaseTileGrid from '../components/projects/CaseTileGrid.astro';
+import Carousel from '../components/shared/Carousel.astro';
+import SectionToggle from '../components/shared/SectionToggle.astro';
+import Reveal from '../components/Reveal.astro';
+import {
+  CONTACT_SECTION,
+  LANDING_META,
+  LIBRARY_SECTION,
+  PROJECTS_SECTION,
+  RESUME_SECTION,
+  WRITING_SECTION,
+} from '../data/copy/landing';
+import { WRITING_ORDER, ANALYSIS_ORDER, LIBRARY_ORDER, byOrder } from '../data/copy/collections';
+import { coverFor, thumbFor } from '../data/assets';
+
+const essays = byOrder((await getCollection('writing')).filter((e) => !e.data.draft), WRITING_ORDER);
+const analysis = byOrder((await getCollection('analysis')).filter((e) => !e.data.draft), ANALYSIS_ORDER);
+const books = byOrder((await getCollection('library')).filter((e) => !e.data.draft), LIBRARY_ORDER);
+
+const essayItems = essays.map((e) => ({
+  href: `/writing/${e.data.slug}`,
+  title: e.data.title,
+  description: e.data.excerpt,
+  image: thumbFor('writing', e.data.slug),
+}));
+
+const analysisItems = analysis.map((e) => ({
+  href: `/analysis/${e.data.slug}`,
+  title: e.data.title,
+  description: e.data.excerpt,
+  image: thumbFor('analysis', e.data.slug),
+}));
+
+/* The cover needs no alt here: the tile prints the title and the author as
+   text. 11's "title and author, not Book cover of" governs the index pages,
+   where the cover stands alone. */
+const bookItems = books.map((e) => ({
+  href: `/library/${e.data.slug}`,
+  title: e.data.title,
+  description: e.data.verdict,
+  image: coverFor(e.data.slug),
+}));
+---
+
+<BaseLayout title={LANDING_META.title} description={LANDING_META.description}>
+  <Hero />
+
+  <div class="shell landing">
+    <Reveal>
+      <section id="interactive-resume" class="block">
+        <SectionTeaser
+          header={RESUME_SECTION.header}
+          blurb={RESUME_SECTION.blurb}
+          link={RESUME_SECTION.link}
+        />
+        <ResumeEmbedSlot />
+      </section>
+    </Reveal>
+
+    <Reveal>
+      <section class="block">
+        <SectionTeaser
+          header={PROJECTS_SECTION.header}
+          blurb={PROJECTS_SECTION.blurb}
+          link={PROJECTS_SECTION.link}
+        />
+        <CaseTileGrid />
+      </section>
+    </Reveal>
+
+    <Reveal>
+      <section class="block block-writing">
+        <SectionTeaser header={WRITING_SECTION.header} />
+
+        <SectionToggle id="writing" options={WRITING_SECTION.toggle} label="Writing or Analysis" />
+
+        <div
+          class="state"
+          id="writing-panel-essays"
+          role="tabpanel"
+          aria-labelledby="writing-tab-essays"
+        >
+          <p class="t-lede blurb reading">{WRITING_SECTION.states.essays.blurb}</p>
+          <Carousel id="essays" items={essayItems} visible={3} label="essays" />
+          <a class="t-label state-link" href={WRITING_SECTION.states.essays.link.href}>
+            {WRITING_SECTION.states.essays.link.label}
+          </a>
+        </div>
+
+        <div
+          class="state"
+          id="writing-panel-analysis"
+          role="tabpanel"
+          aria-labelledby="writing-tab-analysis"
+          hidden
+        >
+          <p class="t-lede blurb reading">{WRITING_SECTION.states.analysis.blurb}</p>
+          <Carousel id="analysis" items={analysisItems} visible={3} label="analysis pieces" />
+          <a class="t-label state-link" href={WRITING_SECTION.states.analysis.link.href}>
+            {WRITING_SECTION.states.analysis.link.label}
+          </a>
+        </div>
+      </section>
+    </Reveal>
+
+    <Reveal>
+      <section class="block">
+        <SectionTeaser
+          header={LIBRARY_SECTION.header}
+          blurb={LIBRARY_SECTION.blurb}
+          link={LIBRARY_SECTION.link}
+        />
+        <Carousel id="library" items={bookItems} visible={7} label="books" shape="portrait" />
+      </section>
+    </Reveal>
+
+    <Reveal>
+      <section class="block">
+        <SectionTeaser
+          header={CONTACT_SECTION.header}
+          blurb={CONTACT_SECTION.blurb}
+          link={CONTACT_SECTION.link}
+        />
+      </section>
+    </Reveal>
+  </div>
+</BaseLayout>
+
+<style>
+  .landing {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .block {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-5);
+    padding-block: var(--s-6);
+    border-top: 1px solid var(--border);
+  }
+
+  /*
+    The Writing header is separated from its carousel by the toggle, so at the
+    shared gap it sat two steps away from its content while every other header
+    sat one. The toggle hugs the header instead.
+  */
+  .block-writing { gap: var(--s-3); }
+  .block-writing .state { margin-top: var(--s-4); }
+
+  .state {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-5);
+  }
+
+  .blurb { color: var(--muted); }
+
+  .state-link {
+    display: inline-flex;
+    align-self: flex-start;
+    align-items: center;
+    min-height: 44px;
+    color: var(--ink);
+    border-bottom: 1px solid var(--border-strong);
+    transition: border-color var(--dur-fast) var(--ease);
+  }
+
+  .state-link:hover { border-color: var(--blue); }
+
+  @media (min-width: 1024px) {
+    .block { padding-block: var(--s-8); }
+  }
+</style>

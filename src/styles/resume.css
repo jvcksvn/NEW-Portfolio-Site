@@ -1,0 +1,1241 @@
+/*
+  Interactive resume, restyled to the tokens in 08-resume-port-brief.md.
+
+  Layout is the original's: the same grid on the tab carousel, the same track and
+  viewport, the same overflow and transition behavior. Every surface declaration
+  is new, because the original is a dark glassmorphic system and this one is not.
+
+  Dropped rather than ported, per 08's surface rules and 02 section 5:
+
+  - 17 border-radius declarations across the shell selectors. Radius is 0
+    everywhere on this site; the one permitted 2px is for tag chips, which this
+    component does not use.
+  - 19 box-shadow declarations, including the shell's four layer glow and every
+    inset. Shadows are banned outright.
+  - Every backdrop-filter blur, on the shell and the tab rail. Glass is banned.
+  - Every linear-gradient fill on the shell, tabs, panels and scorecard. Gradients
+    are banned.
+  - The dark grounds, rgb(4 11 18 / 0.9) and rgb(0 0 0 / 0.24), and every
+    rgb(255 255 255 / n) hairline. The site is light only.
+  - The six accent hues in `assetAccentColors`, collapsed onto cobalt, coral and
+    graphite per the table in 08.
+  - The `.experience-*` set, roughly style.css 259 to 1027. Confirmed unreferenced
+    by any ported component before dropping.
+*/
+
+.asset-os-shell {
+  --asset-accent: var(--blue);
+
+  width: 100%;
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+/* ---- Tab carousel -------------------------------------------------------- */
+
+.asset-tab-carousel {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 48px;
+  align-items: stretch;
+  gap: var(--s-3);
+  padding: var(--s-4);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.asset-tab-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--t-label);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  transition:
+    color var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease);
+}
+
+.asset-tab-arrow:hover:not(:disabled) {
+  color: var(--ink);
+  border-color: var(--border-strong);
+}
+
+.asset-tab-arrow:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.asset-tabs {
+  display: flex;
+  gap: var(--s-3);
+  overflow-x: auto;
+  scrollbar-width: none;
+  scroll-snap-type: x mandatory;
+}
+
+.asset-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.asset-tab {
+  --tab-accent: var(--graphite);
+
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--s-2);
+  min-width: 168px;
+  min-height: 64px;
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  text-align: left;
+  scroll-snap-align: center;
+  transition:
+    color var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease);
+}
+
+.asset-tab:hover {
+  color: var(--ink);
+  border-color: var(--border-strong);
+}
+
+/* The active tab is marked by a solid rule in its own accent plus the ink
+   weight, never by color alone. */
+.asset-tab.is-active {
+  color: var(--ink);
+  border-color: var(--border-strong);
+  border-bottom: 2px solid var(--tab-accent);
+}
+
+.asset-tab-title {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-display);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.asset-tab-company {
+  font-family: var(--font-mono);
+  font-size: var(--t-label);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--faint);
+}
+
+.asset-tab-logo-frame {
+  display: block;
+  width: 52px;
+  color: var(--faint);
+}
+
+.asset-tab.is-active .asset-tab-logo-frame {
+  color: var(--ink);
+}
+
+.asset-tab-logo,
+.lucid-wordmark {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ---- Viewport and track -------------------------------------------------- */
+
+.asset-viewport {
+  position: relative;
+  overflow: hidden;
+  transition: height var(--dur-slow) var(--ease);
+}
+
+.asset-track {
+  display: block;
+}
+
+.asset-panel {
+  display: none;
+  padding: var(--s-6);
+}
+
+.asset-panel.is-active {
+  display: block;
+}
+
+.asset-panel-header {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--s-6);
+}
+
+.asset-copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  min-width: 0;
+}
+
+.asset-company-logo-frame {
+  display: block;
+  width: 72px;
+  color: var(--ink);
+}
+
+.asset-label {
+  font-family: var(--font-mono);
+  font-size: var(--t-label);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--faint);
+}
+
+.asset-date {
+  color: var(--faint);
+}
+
+/*
+  No reading measure inside a resume panel. A panel is scanned, not read as
+  prose, and a 60 to 68ch cap left dead space down the right of every bullet
+  list on the three role panels and the About tab. The panel body runs the
+  panel's full width.
+*/
+.asset-tagline {
+  font-family: var(--font-body);
+  font-size: var(--t-lede);
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.asset-bullets {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.asset-bullets li {
+  position: relative;
+  padding-left: var(--s-5);
+  font-size: var(--t-body);
+  line-height: 1.7;
+  color: var(--ink);
+}
+
+.asset-bullets li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.7em;
+  width: 8px;
+  height: 1px;
+  background: var(--asset-accent);
+}
+
+.asset-outcome {
+  margin-top: var(--s-5);
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--border);
+  font-size: var(--t-small);
+  color: var(--muted);
+}
+
+/* ---- Scorecard ----------------------------------------------------------- */
+
+.impact-scorecard {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* Rows size to their content rather than splitting the panel height, so a
+     two cell scorecard does not stretch into a tall empty block. */
+  align-content: start;
+  grid-auto-rows: min-content;
+  border-top: 1px solid var(--border);
+  border-left: 1px solid var(--border);
+}
+
+.impact-metric {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: var(--s-2);
+  padding: var(--s-4);
+  min-height: 96px;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.impact-metric strong {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.impact-metric span {
+  color: var(--faint);
+}
+
+/* ---- Education ----------------------------------------------------------- */
+
+.education-details {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--s-4);
+}
+
+.education-section-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-4);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.education-section-card strong {
+  color: var(--faint);
+}
+
+.education-section-card div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  color: var(--ink);
+}
+
+/* ---- About --------------------------------------------------------------- */
+
+.about-story {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+.about-story p {
+  font-size: var(--t-body);
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+/* ---- Visual slot --------------------------------------------------------- */
+
+.asset-main-visual {
+  margin-top: var(--s-6);
+  padding-top: var(--s-6);
+  border-top: 1px solid var(--border);
+}
+
+.asset-visual-pending {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 180px;
+  padding: var(--s-5);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--faint);
+}
+
+/* ---- Controls ------------------------------------------------------------ */
+
+.asset-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding: var(--s-4);
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.asset-controls button {
+  min-height: 44px;
+  padding-inline: var(--s-4);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--t-label);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  transition:
+    color var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease);
+}
+
+.asset-controls button:hover:not(:disabled) {
+  color: var(--ink);
+  border-color: var(--border-strong);
+}
+
+.asset-controls button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.asset-dots {
+  display: flex;
+  gap: var(--s-2);
+}
+
+.asset-dots span {
+  width: 6px;
+  height: 6px;
+  background: var(--border-strong);
+}
+
+.asset-dots span.is-active {
+  background: var(--asset-accent);
+}
+
+/* ---- Breakpoints --------------------------------------------------------- */
+
+@media (min-width: 768px) {
+  .asset-panel {
+    padding: var(--s-8);
+  }
+
+  .asset-panel-header {
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: var(--s-8);
+  }
+
+  .education-details {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ---- Motion -------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .asset-viewport {
+    transition: none;
+  }
+}
+
+/* ==========================================================================
+   Visuals
+
+   Dropped rather than ported from the originals, same reasons as above: every
+   border-radius and box-shadow on .ctb-*, .ecr-*, .runout-*, .inventory-*,
+   .exposure-*, .systems-map-*, .job-callout* and .capability-*; the dark chart
+   grounds; the neon stroke glows on the chart series; and the per series hues,
+   which are now cobalt, coral and graphite with the status set reserved for
+   status. Chart geometry, viewBoxes and class names are the originals.
+   ========================================================================== */
+
+.planner-visual-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-7);
+}
+
+.job-graph-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+.job-callout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-4);
+  border-left: 2px solid var(--border-strong);
+  background: var(--surface-2);
+}
+
+.job-callout-responsibility {
+  border-left-color: var(--asset-accent);
+}
+
+.job-callout-outcome {
+  border-left-color: var(--good);
+}
+
+.job-callout span {
+  color: var(--faint);
+}
+
+.job-callout p {
+  font-size: var(--t-small);
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.asset-visual {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  padding: var(--s-4);
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.visual-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding-bottom: var(--s-3);
+  border-bottom: 1px solid var(--border);
+}
+
+.visual-heading span {
+  color: var(--faint);
+}
+
+.visual-heading strong {
+  color: var(--ink);
+}
+
+.visual-readout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-4);
+  border-left: 2px solid var(--asset-accent);
+  background: var(--surface-2);
+}
+
+.visual-readout span {
+  color: var(--faint);
+}
+
+.visual-readout p {
+  font-size: var(--t-small);
+  color: var(--muted);
+}
+
+.visual-readout.risk-clear { border-left-color: var(--good); }
+.visual-readout.risk-watch { border-left-color: var(--warn); }
+.visual-readout.risk-risk  { border-left-color: var(--crit); }
+
+/* ---- Charts, shared ------------------------------------------------------ */
+
+.production-runout-chart,
+.signal-line-chart {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.chart-grid {
+  stroke: var(--border);
+  stroke-width: 0.2;
+}
+
+.chart-axis {
+  stroke: var(--border-strong);
+  stroke-width: 0.4;
+  fill: none;
+}
+
+.axis-label,
+.production-runout-chart text,
+.signal-line-chart text {
+  font-family: var(--font-mono);
+  font-size: 3px;
+  fill: var(--faint);
+  text-anchor: middle;
+}
+
+.axis-label {
+  text-anchor: end;
+}
+
+.runout-line,
+.signal-series {
+  fill: none;
+  stroke-width: 0.9;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/* Series are keyed by the legend beneath each chart. */
+.demand-line,
+.forecast-series { stroke: var(--graphite); }
+.inventory-line,
+.actual-series   { stroke: var(--blue); }
+.edi-series      { stroke: var(--coral); }
+
+.threshold-line {
+  stroke: var(--crit);
+  stroke-width: 0.4;
+  stroke-dasharray: 2 1.5;
+  fill: none;
+}
+
+.runout-point circle {
+  fill: var(--surface);
+  stroke: var(--blue);
+  stroke-width: 0.7;
+  cursor: pointer;
+}
+
+.runout-point.is-active circle { fill: var(--blue); }
+.runout-point.is-risk circle   { stroke: var(--crit); }
+.runout-point.is-risk.is-active circle { fill: var(--crit); }
+.runout-point path { fill: var(--crit); }
+
+.signal-dot { stroke-width: 0.5; stroke: var(--surface); }
+.signal-dot.forecast-series { fill: var(--graphite); }
+.signal-dot.actual-series   { fill: var(--blue); }
+.signal-dot.edi-series      { fill: var(--coral); }
+.signal-dot.is-active { r: 3; }
+
+.signal-hover-guide { stroke: var(--border-strong); stroke-width: 0.3; }
+.signal-hit-circle { fill: transparent; cursor: pointer; }
+
+.runout-legend,
+.signal-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-4);
+  color: var(--muted);
+}
+
+.runout-legend span,
+.signal-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+/*
+  The legend text is --muted and the series hue rides the swatch beside it.
+  Coral at --t-data measures 3.37:1 and --good 4.26:1, both under AA for text
+  this size. 02 section 8's rule is the one already applied to the risk badge:
+  the hue goes on the mark, the word stays readable.
+*/
+.runout-legend span,
+.signal-legend span {
+  color: var(--muted);
+}
+
+.runout-legend span::before,
+.signal-legend span::before {
+  content: '';
+  width: 12px;
+  height: 2px;
+  background: var(--series, var(--border-strong));
+}
+
+.legend-demand, .signal-legend .forecast-series { --series: var(--graphite); }
+.legend-inventory, .signal-legend .actual-series { --series: var(--blue); }
+.signal-legend .edi-series { --series: var(--coral); }
+.legend-threshold { --series: var(--crit); }
+
+/* ---- Runout dashboard ---------------------------------------------------- */
+
+.runout-dashboard {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--s-5);
+}
+
+.runout-chart-column,
+.runout-notes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  min-width: 0;
+}
+
+.part-state-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--s-3);
+  padding: var(--s-4);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.part-state-summary {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-3);
+}
+
+.part-state-summary div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.part-state-summary span { color: var(--faint); }
+.part-state-summary strong { color: var(--ink); }
+
+.runout-note-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.timeline-note {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: var(--s-3);
+  padding: var(--s-3);
+  text-align: left;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  border-left: 2px solid transparent;
+  background: none;
+  transition: background var(--dur-fast) var(--ease);
+}
+
+.timeline-note:hover,
+.timeline-note.is-active { background: var(--surface-2); }
+
+.timeline-note.tone-good  { border-left-color: var(--good); }
+.timeline-note.tone-watch { border-left-color: var(--warn); }
+.timeline-note.tone-risk  { border-left-color: var(--crit); }
+
+.timeline-date { color: var(--faint); }
+
+.timeline-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.timeline-copy strong { font-size: var(--t-small); color: var(--ink); }
+.timeline-copy em { font-size: var(--t-small); font-style: normal; color: var(--muted); }
+.timeline-status { color: var(--faint); }
+
+/* ---- ECR tracker --------------------------------------------------------- */
+
+.ecr-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-4);
+}
+
+.ecr-filters label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.ecr-filters span { color: var(--faint); }
+
+.ecr-filters select {
+  min-height: 36px;
+  padding: 0 var(--s-3);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--t-small);
+}
+
+/* 02 section 4: wide elements scroll inside their own container. */
+.ecr-table-scroll { overflow-x: auto; }
+
+.ecr-table {
+  min-width: 720px;
+  border-top: 1px solid var(--border);
+}
+
+.ecr-header,
+.ecr-row {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 1fr 1.2fr 0.8fr 1fr 0.6fr 0.8fr;
+  gap: var(--s-3);
+  align-items: center;
+  padding: var(--s-3);
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: var(--t-data);
+}
+
+.ecr-header {
+  color: var(--faint);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: var(--t-label);
+}
+
+.ecr-row {
+  width: 100%;
+  border-left: 2px solid transparent;
+  background: none;
+  color: var(--ink);
+  transition: background var(--dur-fast) var(--ease);
+}
+
+.ecr-row:hover,
+.ecr-row.is-active { background: var(--surface-2); }
+
+.ecr-row.risk-clear { border-left-color: var(--good); }
+.ecr-row.risk-watch { border-left-color: var(--warn); }
+.ecr-row.risk-risk  { border-left-color: var(--crit); }
+
+/*
+  The glyph carries the meaning in shape, a check against a cross, and the cell
+  already carries an aria-label of Complete or Open. --good at --t-data measures
+  4.26:1, under AA, so the glyph itself is ink.
+*/
+.check-cell { color: var(--muted); }
+.check-cell.is-checked { color: var(--ink); }
+
+/*
+  The status word is --ink and the status color rides a dot beside it.
+
+  02's status set is designed for marks and fills, not for 11px text: --warn
+  #E7BD22 on white measures far below the 4.5:1 AA needs at this size, and
+  Lighthouse failed the badge on it. Moving the hue onto a 6px dot keeps the
+  color coding, keeps the text readable, and keeps the rule that status never
+  travels in color alone, since the word is right there.
+*/
+.risk-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-family: var(--font-mono);
+  font-size: var(--t-label);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+}
+
+.risk-badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  flex: 0 0 auto;
+  background: currentColor;
+}
+
+.risk-badge.risk-clear::before { background: var(--good); }
+.risk-badge.risk-watch::before { background: var(--warn); }
+.risk-badge.risk-risk::before  { background: var(--crit); }
+
+/* ---- Exposure visual ----------------------------------------------------- */
+
+.intern-signal-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--s-5);
+}
+
+.signal-chart-stack,
+.signal-detail-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  min-width: 0;
+}
+
+.signal-chart-footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.signal-callout-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+
+.signal-callout-row button {
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: var(--t-small);
+  text-align: left;
+  transition: border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+
+.signal-callout-row button:hover,
+.signal-callout-row button.is-active {
+  border-color: var(--border-strong);
+  color: var(--ink);
+}
+
+.signal-detail-panel {
+  padding: var(--s-4);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.signal-detail-panel > span { color: var(--faint); }
+.signal-detail-panel > strong { color: var(--ink); }
+
+.signal-detail-panel dl {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  margin: 0;
+}
+
+.signal-detail-panel dl div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding-bottom: var(--s-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.signal-detail-panel dt { color: var(--faint); margin: 0; }
+.signal-detail-panel dd { color: var(--ink); margin: 0; }
+
+.signal-detail-panel dl div.is-risk dt,
+.signal-detail-panel dl div.is-risk dd { color: var(--crit); }
+
+.signal-detail-panel p { font-size: var(--t-small); color: var(--muted); }
+
+.scrap-exposure-callout {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--border-strong);
+}
+
+.scrap-exposure-callout span { color: var(--faint); }
+.scrap-exposure-callout strong { color: var(--ink); }
+
+/* ---- Funnel -------------------------------------------------------------- */
+
+.funnel-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.funnel-stage {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  min-height: 44px;
+  padding: var(--s-2) var(--s-4);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--muted);
+  transition: border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+
+.funnel-stage:hover,
+.funnel-stage.is-active {
+  border-color: var(--asset-accent);
+  color: var(--ink);
+}
+
+.funnel-stage strong { color: var(--ink); }
+
+/* ---- Systems map --------------------------------------------------------- */
+
+.systems-map-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--s-4);
+}
+
+.systems-map-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.systems-map-column > span { color: var(--faint); }
+
+.systems-map-column button {
+  min-height: 36px;
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--t-data);
+  text-align: left;
+  transition: border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+
+.systems-map-column button:hover,
+.systems-map-column button.is-active {
+  border-color: var(--asset-accent);
+  color: var(--ink);
+}
+
+@media (min-width: 768px) {
+  .runout-dashboard,
+  .intern-signal-grid {
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  }
+
+  .part-state-summary { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .systems-map-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* ---- About portrait ------------------------------------------------------ */
+
+.about-photo-visual .personal-photo-frame {
+  display: block;
+  max-width: 320px;
+  border: 1px solid var(--border);
+}
+
+.about-photo-visual .personal-photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* Desaturated to match the hero treatment, per 08. */
+  filter: grayscale(1);
+}
+
+/* ==========================================================================
+   Version 2: stat cards, grouped bullets, chip groups
+   ========================================================================== */
+
+.asset-panel-header {
+  align-items: start;
+}
+
+/* 02 section 6: at the top of the panel beside the role title. */
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-3);
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-1);
+  padding: var(--s-4) var(--s-3);
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--hue, var(--graphite));
+  border-radius: var(--r);
+  box-shadow: var(--shadow-1);
+}
+
+.stat-card .figure {
+  font-family: var(--font-display);
+  font-size: var(--t-stat);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-card .unit {
+  font-family: var(--font-display);
+  font-size: calc(var(--t-stat) * 0.6);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.stat-card .stat-label {
+  margin-top: var(--s-2);
+  color: var(--muted);
+}
+
+.asset-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+  margin-top: var(--s-6);
+}
+
+/* Grouped bullets: a bold claim with its sub points nested beneath. */
+.asset-groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+}
+
+/*
+  The rail moved off the list item and onto an inner element, so a disclosure
+  can sit below the rail rather than inside it. 04: the ECR readiness dashboard
+  closes the merged block from underneath; the Clear to Build tracker stays on
+  the contingency rail.
+*/
+.asset-groups > li {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+.asset-groups .rail {
+  display: flex;
+  flex-direction: column;
+  /* One continuous rail across every group in the block. */
+  gap: var(--s-5);
+  padding-left: var(--s-4);
+  border-left: 2px solid var(--border);
+}
+
+.asset-groups .rail-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.asset-groups .claim {
+  font-size: var(--t-body);
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.6;
+}
+
+.asset-groups .points {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.asset-groups .points li {
+  font-size: var(--t-small);
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.stack { color: var(--muted); }
+.stack-label { color: var(--faint); margin-right: var(--s-2); }
+
+/* 02 section 6, capability chip group, inside the resume island. */
+.group-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--s-4);
+}
+
+.chip-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--hue);
+  border-radius: var(--r);
+  box-shadow: var(--shadow-1);
+}
+
+.chip-group .group-label { color: var(--hue); }
+
+.chip-group .chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+
+.chip-group .chip {
+  padding: var(--s-1) var(--s-3);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--ink);
+}
+
+@media (min-width: 768px) {
+  .asset-panel-header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+  }
+
+  .stat-cards {
+    grid-template-columns: repeat(var(--count, 2), minmax(110px, 1fr));
+  }
+
+  .group-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/*
+  The photo collage on the About tab. Sits beneath the About writing with the
+  headshot visual still above it. The grid itself is the /about component's,
+  scoped to that component; this only spaces it inside the panel.
+*/
+.asset-collage {
+  margin-top: var(--s-6);
+}
+
+/* ---- Visual disclosures. 04. ------------------------------------------- */
+
+/*
+  Closed on load. Native <details>, so the control is a real button to the
+  keyboard and the open state is announced without any script.
+*/
+.visual-disclosure {
+  margin-top: var(--s-4);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: var(--surface);
+}
+
+.disclosure-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: 44px;
+  padding: var(--s-2) var(--s-4);
+  color: var(--muted);
+  cursor: pointer;
+  list-style: none;
+  transition: color var(--dur-fast) var(--ease);
+}
+
+/* The default triangle, removed in both engines, replaced by the chevron. */
+.disclosure-summary::-webkit-details-marker { display: none; }
+.disclosure-summary::marker { content: ''; }
+
+.disclosure-summary:hover { color: var(--ink); }
+
+.disclosure-chevron {
+  width: 8px;
+  height: 8px;
+  border-right: 1.25px solid currentColor;
+  border-bottom: 1.25px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform var(--dur-fast) var(--ease);
+}
+
+.visual-disclosure[open] > .disclosure-summary { color: var(--ink); }
+.visual-disclosure[open] .disclosure-chevron { transform: rotate(45deg); }
+
+.disclosure-body {
+  padding: 0 var(--s-4) var(--s-4);
+  border-top: 1px solid var(--border);
+  margin-top: var(--s-2);
+  padding-top: var(--s-4);
+  overflow-x: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .disclosure-chevron { transition: none; }
+}
+
+/*
+  Education lays its four groups out two by two rather than as a row of four.
+  04. Its own class, because .group-grid is shared with the capability groups
+  on the tools tab and those are unchanged.
+*/
+@media (min-width: 768px) {
+  .group-grid.education-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

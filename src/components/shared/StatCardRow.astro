@@ -1,0 +1,36 @@
+---
+/*
+  Sets of three or four stat cards in a divided row. 02 section 6.
+  On a role panel this sits at the top beside the role title, not below the body.
+*/
+import StatCard from './StatCard.astro';
+
+interface Props {
+  stats: ReadonlyArray<{
+    figure: string;
+    unit?: string;
+    label: string;
+    hue?: 'blue' | 'green' | 'amber' | 'purple' | 'coral' | 'graphite';
+  }>;
+}
+
+const { stats } = Astro.props;
+---
+
+<div class="stat-card-row" style={`--count:${stats.length}`}>
+  {stats.map((s) => <StatCard figure={s.figure} unit={s.unit} label={s.label} hue={s.hue} />)}
+</div>
+
+<style>
+  .stat-card-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-3);
+  }
+
+  @media (min-width: 768px) {
+    .stat-card-row {
+      grid-template-columns: repeat(var(--count), minmax(0, 1fr));
+    }
+  }
+</style>

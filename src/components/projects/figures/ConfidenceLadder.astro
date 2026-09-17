@@ -1,0 +1,77 @@
+---
+/*
+  Confidence ladder (Case 02). The five supply confidence tiers as stepped
+  rungs, a bar shortening down the ladder to show weight. Replaces the plain
+  numbered list for this section. Data driven: the tiers come from the case
+  document, so the copy stays in one place.
+
+  The bar length is a fixed visual step per rung, not a measured value; it
+  encodes ordering, which is what the tiers are.
+*/
+interface Props {
+  tiers: ReadonlyArray<{ term: string; body: string }>;
+}
+const { tiers } = Astro.props;
+const widths = [100, 80, 58, 36, 16];
+---
+
+<ol class="ladder">
+  {
+    tiers.map((tier, i) => (
+      <li class="rung">
+        <span class="lv t-label">{String(i + 1).padStart(2, '0')}</span>
+        <span class="body">
+          <strong>{tier.term}</strong>
+          <span class="gloss t-small">{tier.body}</span>
+        </span>
+        <span class="bar" aria-hidden="true">
+          <span class="fill" style={`width:${widths[i] ?? 12}%`}></span>
+        </span>
+      </li>
+    ))
+  }
+</ol>
+
+<style>
+  .ladder {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+    max-width: 68ch;
+  }
+
+  .rung {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr) 120px;
+    align-items: center;
+    gap: var(--s-4);
+    padding: var(--s-3) var(--s-4);
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .lv { color: var(--cs-tint, var(--faint)); }
+
+  .body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .body strong { font-size: var(--t-body); color: var(--ink); }
+  .gloss { color: var(--muted); line-height: 1.5; }
+
+  .bar {
+    height: 8px;
+    background: var(--chart-fill);
+    justify-self: end;
+    width: 120px;
+    overflow: hidden;
+  }
+
+  .fill {
+    display: block;
+    height: 100%;
+    background: var(--cs-tint, var(--ink));
+  }
+
+  @media (max-width: 600px) {
+    .rung { grid-template-columns: 28px minmax(0, 1fr); }
+    .bar { display: none; }
+  }
+</style>

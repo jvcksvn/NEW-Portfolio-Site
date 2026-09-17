@@ -1,0 +1,35 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import IndexPage from '../components/collections/IndexPage.astro';
+import BookCard from '../components/collections/BookCard.astro';
+import { LIBRARY_INDEX, LIBRARY_ORDER, byOrder } from '../data/copy/collections';
+import { coverFor } from '../data/assets';
+import { titleFor } from '../lib/seo';
+import { ROUTES } from '../lib/routes';
+
+const entries = byOrder(
+  (await getCollection('library')).filter((e) => !e.data.draft),
+  LIBRARY_ORDER,
+);
+
+---
+
+<BaseLayout title={titleFor(ROUTES.library.label)} description={LIBRARY_INDEX.meta}>
+  <IndexPage
+    h1={LIBRARY_INDEX.h1}
+    standfirst={LIBRARY_INDEX.standfirst}
+  >
+    {
+      entries.map((entry) => (
+        <BookCard
+          href={`/library/${entry.data.slug}`}
+          title={entry.data.title}
+          author={entry.data.author}
+          verdict={entry.data.verdict}
+          cover={coverFor(entry.data.slug)}
+        />
+      ))
+    }
+  </IndexPage>
+</BaseLayout>

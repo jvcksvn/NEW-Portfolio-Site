@@ -1,0 +1,32 @@
+---
+/*
+  02-design-system.md section 6: the skip link is the first focusable element,
+  visually hidden until focused.
+*/
+import { NAV_COPY } from '../data/copy/landing';
+---
+
+<a class="skip" href="#content">{NAV_COPY.skipLink}</a>
+
+<style>
+  .skip {
+    position: absolute;
+    top: var(--s-2);
+    left: var(--s-2);
+    z-index: 100;
+    padding: var(--s-3) var(--s-4);
+    background: var(--ink);
+    color: var(--bg);
+    font-family: var(--font-mono);
+    font-size: var(--t-label);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    transform: translateY(calc(-100% - var(--s-4)));
+    transition: transform var(--dur-fast) var(--ease);
+  }
+
+  .skip:focus {
+    transform: translateY(0);
+  }
+</style>

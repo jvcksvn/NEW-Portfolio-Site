@@ -1,0 +1,138 @@
+/*
+  Print stylesheet, /resume only. 01 section 7.
+
+  A recruiter printing this page should get the record, not the interface.
+  Loaded by src/pages/resume.astro alone, so printing any other page, including
+  the landing where the same island is embedded, is unaffected.
+*/
+
+@media print {
+  /* ---- Black on white, no fills ------------------------------------------ */
+
+  :root {
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --surface-2: #ffffff;
+    --ink: #000000;
+    --muted: #000000;
+    --faint: #333333;
+    --border: #999999;
+    --border-strong: #666666;
+    --blue: #000000;
+    --coral: #000000;
+    --graphite: #000000;
+    --good: #000000;
+    --warn: #000000;
+    --crit: #000000;
+  }
+
+  *,
+  *::before,
+  *::after {
+    background: transparent !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+  }
+
+  body {
+    background: #ffffff !important;
+    font-size: 11pt;
+    line-height: 1.45;
+  }
+
+  /* ---- The interface does not print -------------------------------------- */
+
+  .nav,
+  .skip,
+  footer,
+  .asset-tab-carousel,
+  .asset-controls,
+  .asset-dots,
+  .asset-tab-arrow,
+  .asset-visual-pending,
+  .download {
+    display: none !important;
+  }
+
+  /* ---- Every panel prints, not only the active one ----------------------- */
+
+  .asset-viewport {
+    height: auto !important;
+    overflow: visible !important;
+    transition: none !important;
+  }
+
+  .asset-panel {
+    display: block !important;
+    padding: 0 0 12pt !important;
+    break-inside: auto;
+  }
+
+  .asset-panel + .asset-panel {
+    border-top: 1px solid #999999 !important;
+    padding-top: 12pt !important;
+    break-before: auto;
+  }
+
+  /* The inactive panels carry inert, which is a keyboard concern and has no
+     bearing on print. They still render. */
+  .asset-os-shell {
+    border: 0 !important;
+  }
+
+  /* ---- Nothing breaks across a page mid figure --------------------------- */
+
+  .impact-scorecard,
+  .impact-metric,
+  .stat-row,
+  .stat-cell,
+  .asset-visual,
+  .figure,
+  .job-callout,
+  .education-section-card,
+  .authority,
+  .card,
+  .ecr-table,
+  .part-state-card,
+  .runout-legend,
+  .signal-legend,
+  .signal-detail-panel {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  h1, h2, h3 {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  /* ---- URLs after external links ----------------------------------------- */
+
+  a[href^='http']::after,
+  a[href^='mailto']::after {
+    content: ' (' attr(href) ')';
+    font-family: var(--font-mono);
+    font-size: 9pt;
+    word-break: break-all;
+  }
+
+  /* Internal links are relative and printing the path helps nobody. */
+  a[href^='/']::after {
+    content: '';
+  }
+
+  /* ---- Layout --------------------------------------------------------- */
+
+  .shell {
+    max-width: none;
+    padding-inline: 0;
+  }
+
+  .resume-page {
+    padding-block: 0 !important;
+  }
+
+  @page {
+    margin: 16mm;
+  }
+}

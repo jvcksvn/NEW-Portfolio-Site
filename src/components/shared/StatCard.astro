@@ -1,0 +1,60 @@
+---
+/*
+  02 section 6, "Stat card".
+
+  --surface fill, 1px border, --r, --shadow-1, and a 3px top border in the
+  card's category hue. Contents centered: the figure at --t-stat tabular, the
+  unit on a second line at about 60 percent of the figure size where there is
+  one, and the label beneath at --t-label in --muted.
+
+  The hue is a top border, never the figure's colour, so nothing here depends on
+  colour to be read. --coral in particular may not set text below 24px.
+*/
+interface Props {
+  figure: string;
+  unit?: string;
+  label: string;
+  hue?: 'blue' | 'green' | 'amber' | 'purple' | 'coral' | 'graphite';
+}
+
+const { figure, unit, label, hue = 'graphite' } = Astro.props;
+---
+
+<div class="stat-card card" data-hue={hue}>
+  <p class="figure t-stat">{figure}</p>
+  {unit && <p class="unit">{unit}</p>}
+  <p class="label t-label">{label}</p>
+</div>
+
+<style>
+  .stat-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: var(--s-1);
+    padding: var(--s-4) var(--s-3);
+    text-align: center;
+    border-top: 3px solid var(--hue, var(--graphite));
+  }
+
+  .figure {
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+
+  /* About 60 percent of the figure, per 02 section 6. */
+  .unit {
+    font-family: var(--font-display);
+    font-size: calc(var(--t-stat) * 0.6);
+    font-weight: 700;
+    line-height: 1;
+    color: var(--ink);
+  }
+
+  .label {
+    margin-top: var(--s-2);
+    color: var(--muted);
+  }
+</style>
