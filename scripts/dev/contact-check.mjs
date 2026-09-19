@@ -1,4 +1,10 @@
-/* What the contact form actually does today, end to end, against dist. */
+/*
+  What the contact form actually does today, end to end, against dist.
+
+  Every formspree request is intercepted before anything else runs. The form is
+  live now, and an earlier version of this script submitted a real message to
+  it while checking the "no endpoint" path. Nothing here reaches the network.
+*/
 import { chromium } from 'playwright';
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
@@ -10,6 +16,8 @@ try{const b=await readFile(p);r.writeHead(200,{'content-type':MIME[extname(p)]||
 await new Promise(res=>server.listen(4321,res));
 const b=await chromium.launch();
 const p=await b.newPage({viewport:{width:1280,height:900}});
+/* Blanket guard, set once and never removed: no case may reach formspree. */
+await p.route('https://formspree.io/**', (route) => route.fulfill({status:200,body:'{"ok":true}'}));
 const go=async()=>{await p.goto('http://localhost:4321/contact',{waitUntil:'networkidle'});await p.waitForTimeout(600);};
 
 await go();
@@ -25,8 +33,9 @@ console.log('  message error:', JSON.stringify(await p.locator('[data-error="mes
 console.log('  focus moved to:', await p.evaluate(()=>document.activeElement?.id));
 console.log('  aria-invalid set:', await p.evaluate(()=>document.querySelectorAll('[aria-invalid="true"]').length));
 
-console.log('\n-- valid submit, no endpoint configured --');
+console.log('\n-- valid submit, endpoint removed from the page --');
 await go();
+await p.evaluate(()=>{document.querySelector('[data-contact]').dataset.endpoint=''});
 await p.fill('#name','Test'); await p.fill('#email','a@b.com'); await p.fill('#message','Hello');
 await p.click('.submit'); await p.waitForTimeout(600);
 console.log('  status shown:', JSON.stringify(await p.locator('[data-status]').textContent()));
@@ -34,7 +43,6 @@ console.log('  status kind:', await p.getAttribute('[data-status]','data-kind'))
 
 console.log('\n-- valid submit with an endpoint stubbed to 200 --');
 await go();
-await p.route('https://formspree.io/**', r=>r.fulfill({status:200,body:'{"ok":true}'}));
 await p.evaluate(()=>document.querySelector('[data-contact]').dataset.endpoint='https://formspree.io/f/TEST');
 await p.fill('#name','Test'); await p.fill('#email','a@b.com'); await p.fill('#message','Hello');
 await p.click('.submit'); await p.waitForTimeout(800);
@@ -43,6 +51,7 @@ console.log('  form reset:', await p.inputValue('#message')==='');
 
 console.log('\n-- endpoint stubbed to 500 --');
 await go();
+await p.unroute('https://formspree.io/**');
 await p.route('https://formspree.io/**', r=>r.fulfill({status:500,body:'err'}));
 await p.evaluate(()=>document.querySelector('[data-contact]').dataset.endpoint='https://formspree.io/f/TEST');
 await p.fill('#email','a@b.com'); await p.fill('#message','Hello');

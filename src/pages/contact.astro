@@ -62,25 +62,36 @@ const endpoint = FORMSPREE_FORM_ID ? `https://formspree.io/f/${FORMSPREE_FORM_ID
         <input id="company" name="_gotcha" type="text" tabindex="-1" autocomplete="off" />
       </div>
 
-      <button class="submit" type="submit">{CONTACT.submit}</button>
+      {/*
+        The send button and the direct routes sit on one row. The fallbacks
+        used to sit in a block below the form, which read as a footnote to a
+        form that might not work. Beside the button they read as the second and
+        third way to do the same thing, which is what they are.
+      */}
+      <div class="send-row">
+        <button class="submit" type="submit">{CONTACT.submit}</button>
+
+        <p class="or t-label" id="or-directly">Or directly</p>
+
+        <ul class="fallbacks" aria-labelledby="or-directly">
+          {
+            CONTACT.fallbacks.map((f) => (
+              <li>
+                <a
+                  class="fallback t-small"
+                  href={f.href}
+                  rel={f.href.startsWith('http') ? 'me noopener' : undefined}
+                >
+                  {f.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
 
       <p class="form-status t-small" data-status role="status" aria-live="polite" hidden></p>
     </form>
-
-    <div class="fallbacks">
-      <p class="t-label">Or directly</p>
-      <ul>
-        {
-          CONTACT.fallbacks.map((f) => (
-            <li>
-              <a class="t-small" href={f.href} rel={f.href.startsWith('http') ? 'me noopener' : undefined}>
-                {f.label}
-              </a>
-            </li>
-          ))
-        }
-      </ul>
-    </div>
   </section>
 </BaseLayout>
 
@@ -181,19 +192,26 @@ const endpoint = FORMSPREE_FORM_ID ? `https://formspree.io/f/${FORMSPREE_FORM_ID
 
   .body { color: var(--muted); }
 
+  /*
+    The 560px measure belongs to the fields, not to the form. Capping the form
+    capped the send row with it, and the button, the label and the two routes
+    do not fit in 560px, so the routes wrapped to a second line.
+  */
   .contact-form {
     display: flex;
     flex-direction: column;
     gap: var(--s-5);
-    max-width: 560px;
     margin-top: var(--s-4);
   }
+
+  .field { max-width: 560px; }
 
   .field {
     display: flex;
     flex-direction: column;
     gap: var(--s-2);
   }
+
 
   .field label { color: var(--faint); }
 
@@ -233,9 +251,20 @@ const endpoint = FORMSPREE_FORM_ID ? `https://formspree.io/f/${FORMSPREE_FORM_ID
     white-space: nowrap;
   }
 
+  /*
+    The send button and the direct routes, one row. It wraps to a column under
+    560px, where the form is already full width and a row would crush both.
+  */
+  .send-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-3) var(--s-4);
+    margin-top: var(--s-2);
+  }
+
   /* The only filled element on the site. 02 section 6. */
   .submit {
-    align-self: flex-start;
     min-height: 44px;
     padding: var(--s-3) var(--s-5);
     background: var(--ink);
@@ -248,33 +277,39 @@ const endpoint = FORMSPREE_FORM_ID ? `https://formspree.io/f/${FORMSPREE_FORM_ID
   .submit:hover { opacity: 0.88; }
   .submit:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  .form-status { color: var(--ink); }
-  .form-status[data-kind='fail'] { color: var(--crit); }
+  .or { color: var(--faint); }
 
   .fallbacks {
     display: flex;
-    flex-direction: column;
-    gap: var(--s-3);
-    padding-top: var(--s-6);
-    border-top: 1px solid var(--border);
-  }
-
-  .fallbacks p { color: var(--faint); }
-
-  .fallbacks ul {
-    display: flex;
     flex-wrap: wrap;
-    gap: var(--s-5);
+    gap: var(--s-3);
   }
 
-  .fallbacks a {
+  /*
+    Each route in its own container: the same 1px border, --r and --surface as
+    every other card on the site, sized to match the send button's height so
+    the three read as one row. Not filled, because only the submit is.
+  */
+  .fallback {
     display: inline-flex;
     align-items: center;
     min-height: 44px;
+    padding: var(--s-3) var(--s-4);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    background: var(--surface);
     color: var(--ink);
-    border-bottom: 1px solid var(--border-strong);
-    transition: border-color var(--dur-fast) var(--ease);
+    transition:
+      border-color var(--dur-fast) var(--ease),
+      box-shadow var(--dur-fast) var(--ease);
   }
 
-  .fallbacks a:hover { border-color: var(--blue); }
+  .fallback:hover {
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-1);
+  }
+
+  /* The send result, below the row rather than beside it. */
+  .form-status { color: var(--ink); }
+  .form-status[data-kind='fail'] { color: var(--crit); }
 </style>

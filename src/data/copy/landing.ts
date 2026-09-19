@@ -10,7 +10,7 @@
   character what the copy file says, straight apostrophes included.
 */
 
-import { LINKS, MAILTO, ROUTES } from '../../lib/routes';
+import { LINKS, ROUTES } from '../../lib/routes';
 
 /* 1. Nav ------------------------------------------------------------------ */
 
@@ -118,9 +118,14 @@ export const LIBRARY_SECTION = {
 */
 export const CONTACT_SECTION = {
   header: ROUTES.contact.label,
+  /* The "Email works." opener is dropped: the link beside it now goes to the
+     form rather than to a mail client, so the sentence contradicted it. The two
+     day commitment stays, which is what the note above is about. */
   blurb:
-    'Email works. Specific questions get specific answers, usually within two days. If you are working on something worth building, say what it is. If not, the answer will be short and honest.',
-  link: { label: 'Send a message', href: MAILTO },
+    'Specific questions get specific answers, usually within two days. If you are working on something worth building, say what it is. If not, the answer will be short and honest.',
+  /* The form, not a mailto. The address is still on /contact beneath the form
+     and in the footer, so nothing loses the direct route. */
+  link: { label: 'Send a message', href: ROUTES.contact.path },
 } as const;
 
 /* 11. Metadata ------------------------------------------------------------- */

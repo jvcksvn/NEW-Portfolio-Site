@@ -12,7 +12,7 @@ export const CONTACT = {
   h1: 'Contact',
 
   /* Page copy, 33 words. */
-  body: "Email works. Planning, the tooling behind it, or anything written on this site gets an answer. Recruiting mail for roles outside manufacturing usually doesn't, and saying so here beats leaving it unanswered.",
+  body: "Have a specific question or an interesting opportunity? Tell me what you’re working on. I usually reply within two days, and I’ll give you a clear, honest answer.",
 
   fields: [
     { name: 'name', label: 'Name', type: 'text', placeholder: '' },
@@ -21,14 +21,14 @@ export const CONTACT = {
       name: 'message',
       label: 'Message',
       type: 'textarea',
-      placeholder: 'The role, the project, or the piece this is about',
+      placeholder: 'Who you are, what you are building, and what you need',
     },
   ],
 
   submit: 'Send the message',
 
   /* Success state, 6 words. No exclamation mark, no Thanks. */
-  success: 'Message sent. I answer email.',
+  success: 'Message sent. Expect response within 48 hours',
 
   errors: {
     email: 'That email address is missing an @. Fix it and send again.',
